@@ -12,34 +12,55 @@ enum class TiledLayerType{TileLayer};
 
 class TiledTilesSet{
 	public:
+		TiledTilesSet(const Value& jsonTilesSetObject);
+		~TiledTilesSet();
 		
+		int GetFirstGID()const;
+		const Upp::String GetSource()const;
 	private:
 		int firstGid;
-		Upp::Stirng source;
+		Upp::String source;
 };
 
 class TiledLayer{
 	public:
+		TiledLayer(const Value& jsonLayerObject);
+		~TiledLayer();
 		
+		const Upp::String& GetName()const;
+		const Upp::Vector<int>&  GetDatas()const;
+		int GetId()const;
+		int GetHeight()const;
+		int GetWidth()const;
+		int GetX()const;
+		int GetY()const;
 		
+		float GetOpacity()const;
+		bool IsVisible()const;
+		
+		TiledLayerType GetType()const;
+		const ValueMap& GetProperties()const;
 		
 	private:
-		Upp::Vector<int> datas;
-		int height;
-		int id;
 		Upp::String name;
-		float opacity;
-		TiledLayerType type;
+		Upp::Vector<int> datas;
 		bool visible;
+		float opacity;
+		
+		int height;
 		int width;
+		int id;
 		int x;
 		int y;
+		
+		TiledLayerType type;
 		ValueMap properties;
 };
 
 class TiledMapJson{
 	public:
 		TiledMapJson(const Upp::String& file);
+		~TiledMapJson();
 		
 		const Upp::String& GetVersion()const;
 		const Upp::String& GetTiledVersion()const;
@@ -61,26 +82,26 @@ class TiledMapJson{
 		int GetNextObjectId()const;
 	private:
 		Upp::String version;
-		Upp::String tiledversion;
+		Upp::String tiledVersion;
 		
 		Upp::Array<TiledLayer> layers;
-		Upp::Array<TiledTilesSet> tilessets
+		Upp::Array<TiledTilesSet> tilesSets;
 		
-		int compressionlevel;
+		int compressionLevel;
 		bool infinite;
 		
 		TiledType type;
 		TiledOrientation orientation;
-		TiledRenderOrder renderorder;
+		TiledRenderOrder renderOrder;
 
-		int tileheight;
-		int tilewidth;
+		int tileHeight;
+		int tileWidth;
 		
 		int width;
 		int height;
 		
-		int nextlayerid;
-		int nextobjectid;
+		int nextLayerid;
+		int nextObjectid;
 };
 
 }

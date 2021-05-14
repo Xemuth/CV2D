@@ -2,9 +2,10 @@ uses
 	Core;
 
 file
+	TiledMapReader.cpp,
 	test.json,
 	TiledMap.h,
-	TiledMapReader.cpp,
+	TiledMap.cpp,
 	README.md;
 
 mainconfig
