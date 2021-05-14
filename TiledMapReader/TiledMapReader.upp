@@ -4,7 +4,8 @@ uses
 file
 	test.json,
 	TiledMap.h,
-	TiledMapReader.cpp;
+	TiledMapReader.cpp,
+	README.md;
 
 mainconfig
 	"" = "";

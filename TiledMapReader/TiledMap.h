@@ -39,7 +39,7 @@ class TiledLayer{
 
 class TiledMapJson{
 	public:
-		TiledMapJson(Upp::String file);
+		TiledMapJson(const Upp::String& file);
 		
 		const Upp::String& GetVersion()const;
 		const Upp::String& GetTiledVersion()const;
