@@ -1,0 +1,11 @@
+uses
+	Core;
+
+file
+	test.json,
+	TiledMap.h,
+	TiledMapReader.cpp;
+
+mainconfig
+	"" = "";
+
