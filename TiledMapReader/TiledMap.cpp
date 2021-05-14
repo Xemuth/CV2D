@@ -3,7 +3,33 @@
 namespace Upp{
 
 TiledMapJson::TiledMapJson(const Upp::String& file){
+		
+		if(!IsFullPath(file)) ASSERT_(FileExists("./" + file), "File " + file + " don't exist");
+		else ASSERT_(FileExists(file), "File " + file + " don't exist");
+		
+		Value json = ParseJSON(LoadFile(file));
+		
+		version = json["version"];
+		tiledVersion = json["tiledVersion"];
+		
+		compressionLevel = json["compressionLevel"];
+		infinite = json["infinite"];
+		
+		type = ConverStringToTiledType(json["type"]);
+		orientation = ConverStringToTiledOrientation(json["orientation"]);
+		renderOrder = ConverStringToTiledRenderOrder(json["renderorder"]);
 	
+		tileHeight = json["tileheight"];
+		tileWidth = json["tilewidth"];
+		
+		width = json["width"];
+		height = json["height"];
+		
+		nextLayerid = json["nextlayerid"];
+		nextObjectid = json["nextobjectid"];
+	
+		//Upp::Array<TiledLayer> layers;
+		//Upp::Array<TiledTilesSet> tilesSets;
 }
 
 TiledLayer::TiledLayer(const Value& jsonLayerObject){
@@ -12,6 +38,42 @@ TiledLayer::TiledLayer(const Value& jsonLayerObject){
 
 TiledTilesSet::TiledTilesSet(const Value& jsonTilesSetObject){
 		
+}
+
+TiledOrientation ConverStringToTiledOrientation(const Upp::String& orientation){
+	if(ToLower(orientation).IsEqual("staggered"))
+		return TiledOrientation::Staggered;
+	else if(ToLower(orientation).IsEqual("hexagonal"))
+		return TiledOrientation::Hexagonal;
+	else if(ToLower(orientation).IsEqual("isometrique"))
+		return TiledOrientation::Isometrique;
+	else
+		return TiledOrientation::Orthogonal;
+}
+
+TiledRenderOrder ConverStringToTiledRenderOrder(const Upp::String& renderOrder){
+	if(ToLower(renderOrder).IsEqual("left-down"))
+		return TiledRenderOrder::LeftDown;
+	else if(ToLower(renderOrder).IsEqual("left-up"))
+		return TiledRenderOrder::LeftUp;
+	else if(ToLower(renderOrder).IsEqual("right-up"))
+		return TiledRenderOrder::RightUp;
+	else
+		return TiledRenderOrder::RightDown;
+}
+
+TiledType ConverStringToTiledType(const Upp::String& type){
+	if(ToLower(type).IsEqual("map"))
+		return TiledType::Map;
+	else
+		return TiledType::Map;
+}
+
+TiledLayerType ConverStringToTiledLayerType(const Upp::String& layerType){
+	if(ToLower(layerType).IsEqual("tilelayer"))
+		return TiledLayerType::TileLayer;
+	else
+		return TiledLayerType::TileLayer;
 }
 
 TiledTilesSet::~TiledTilesSet(){}

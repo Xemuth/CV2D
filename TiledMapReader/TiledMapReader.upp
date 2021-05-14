@@ -3,9 +3,9 @@ uses
 
 file
 	TiledMapReader.cpp,
-	test.json,
 	TiledMap.h,
 	TiledMap.cpp,
+	test.json,
 	README.md;
 
 mainconfig

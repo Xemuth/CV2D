@@ -5,10 +5,15 @@
 
 namespace Upp{
 
-enum class TiledOrientation{Orthogonal, Isometrique, IsometriqueEchelonne, HexagonalEchelonne};
-enum class TiledRenderOrder{RightDown, RightTop, LeftDown, LeftUp};
-enum class TiledType{Map};
-enum class TiledLayerType{TileLayer};
+enum class TiledOrientation{Orthogonal, Isometrique, Staggered, Hexagonal};
+enum class TiledRenderOrder{RightDown, RightUp, LeftDown, LeftUp};
+enum class TiledType{Map}; //To enhance to implement all possibilites
+enum class TiledLayerType{TileLayer}; //To enhance to implement all possibilites
+
+TiledOrientation ConverStringToTiledOrientation(const Upp::String& orientation);
+TiledRenderOrder ConverStringToTiledRenderOrder(const Upp::String& renderOrder);
+TiledType ConverStringToTiledType(const Upp::String& type);
+TiledLayerType ConverStringToTiledLayerType(const Upp::String& layerType);
 
 class TiledTilesSet{
 	public:

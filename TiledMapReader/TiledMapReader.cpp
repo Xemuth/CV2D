@@ -5,6 +5,6 @@ using namespace Upp;
 
 CONSOLE_APP_MAIN
 {
-	TiledMapJson("My File.json");
+	TiledMapJson("test.json");
 	
 }
