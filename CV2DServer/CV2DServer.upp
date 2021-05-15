@@ -1,0 +1,9 @@
+uses
+	Core;
+
+file
+	CV2DServer.cpp;
+
+mainconfig
+	"" = "";
+
