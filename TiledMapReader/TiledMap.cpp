@@ -3,16 +3,15 @@
 namespace Upp{
 
 TiledMapJson::TiledMapJson(const Upp::String& file){
-		
-		if(!IsFullPath(file)) ASSERT_(FileExists("./" + file), "File " + file + " don't exist");
-		else ASSERT_(FileExists(file), "File " + file + " don't exist");
+
+	ASSERT_(FileExists(file), "JSON File \"" + file + "\" don't exist");
 		
 		Value json = ParseJSON(LoadFile(file));
 		
 		version = json["version"];
-		tiledVersion = json["tiledVersion"];
+		tiledVersion = json["tiledversion"];
 		
-		compressionLevel = json["compressionLevel"];
+		compressionLevel = json["compressionlevel"];
 		infinite = json["infinite"];
 		
 		type = ConverStringToTiledType(json["type"]);
@@ -24,20 +23,49 @@ TiledMapJson::TiledMapJson(const Upp::String& file){
 		
 		width = json["width"];
 		height = json["height"];
-		
+	
 		nextLayerid = json["nextlayerid"];
 		nextObjectid = json["nextobjectid"];
-	
-		//Upp::Array<TiledLayer> layers;
-		//Upp::Array<TiledTilesSet> tilesSets;
+		
+		ReadLayers(json["layers"]);
+		ReadTilesSets(json["tilesets"]);
+}
+
+void TiledMapJson::ReadLayers(const Value& jsonLayers){
+	for(int i = 0; i < jsonLayers.GetCount(); i++){
+		layers.Create(jsonLayers[i]);
+	}
+}
+
+void TiledMapJson::ReadTilesSets(const Value& jsonTilesSets){
+	for(int i = 0; i < jsonTilesSets.GetCount(); i++){
+		tilesSets.Create(jsonTilesSets[i]);
+	}
 }
 
 TiledLayer::TiledLayer(const Value& jsonLayerObject){
+	Upp::String name = jsonLayerObject["name"];
+	for(int i = 0; i < jsonLayerObject["data"].GetCount(); i++)
+		datas.Add(jsonLayerObject["data"][i]);
+		
+	bool visible = jsonLayerObject["visible"];
+	float opacity = jsonLayerObject["opacity"].Get<double>();
 	
+	int height = jsonLayerObject["height"];
+	int width = jsonLayerObject["width"];
+	int id = jsonLayerObject["id"];
+	int x = jsonLayerObject["x"];
+	int y = jsonLayerObject["y"];
+	
+	type = ConverStringToTiledLayerType(jsonLayerObject["type"]);
+	
+	if(!IsNull(jsonLayerObject["properties"]))
+		properties = jsonLayerObject["properties"];
 }
 
 TiledTilesSet::TiledTilesSet(const Value& jsonTilesSetObject){
-		
+	firstGid = jsonTilesSetObject["firstGid"];
+	source = jsonTilesSetObject["source"];
 }
 
 TiledOrientation ConverStringToTiledOrientation(const Upp::String& orientation){

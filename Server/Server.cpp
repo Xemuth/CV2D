@@ -17,29 +17,33 @@ CONSOLE_APP_MAIN
 	for(;;) {
 		TcpSocket socket;
 		WebSocket ws;
-		if(socket.Accept(server) && ws.WebAccept(socket)) {
-			LOG("Accepted connection");
-			Upp::String cmd = ws.Recieve();
-			LOG("Commande : " + cmd);
-			Upp::String reponse = "";
-			if(cmd.IsEqual("GetState")){
-				reponse = AsString(X) + ";" + AsString(Y);
-			}else if(cmd.IsEqual("MoveLeft")){
-				X--;
-				reponse = "true";
-			}else if(cmd.IsEqual("MoveRight")){
-				X++;
-				reponse = "true";
-			}else if(cmd.IsEqual("MoveUp")){
-				Y++;
-				reponse = "true";
-			}else if(cmd.IsEqual("MoveDown")){
-				reponse = "false";
+		try{
+			if(socket.Accept(server) && ws.WebAccept(socket)) {
+				LOG("Accepted connection");
+				Upp::String cmd = ws.Receive();
+				LOG("Commande : " + cmd);
+				Upp::String reponse = "";
+				if(cmd.IsEqual("GetState")){
+					reponse = AsString(X) + ";" + AsString(Y);
+				}else if(cmd.IsEqual("MoveLeft")){
+					X--;
+					reponse = "true";
+				}else if(cmd.IsEqual("MoveRight")){
+					X++;
+					reponse = "true";
+				}else if(cmd.IsEqual("MoveUp")){
+					Y++;
+					reponse = "true";
+				}else if(cmd.IsEqual("MoveDown")){
+					reponse = "false";
+				}
+				LOG("Reponse : " + reponse);
+				ws.SendText(reponse);
 			}
-			LOG("Reponse : " + reponse);
-			ws.SendText(reponse);
+			if(ws.IsError())
+				LOG("ERROR: " << ws.GetErrorDesc());
+		}catch(Upp::Exc& exception){
+			LOG("Exception : " + exception);
 		}
-		if(ws.IsError())
-			LOG("ERROR: " << ws.GetErrorDesc());
 	}
 }

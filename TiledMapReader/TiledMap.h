@@ -86,6 +86,11 @@ class TiledMapJson{
 		int GetNextLayerId()const;
 		int GetNextObjectId()const;
 	private:
+		
+		void ReadLayers(const Value& jsonLayers);
+		void ReadTilesSets(const Value& jsonTilesSets);
+		
+		
 		Upp::String version;
 		Upp::String tiledVersion;
 		

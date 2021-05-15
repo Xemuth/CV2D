@@ -5,6 +5,6 @@ using namespace Upp;
 
 CONSOLE_APP_MAIN
 {
-	TiledMapJson("test.json");
+	TiledMapJson("C:\\Upp\\CV2D\\TiledMapReader\\test.json");
 	
 }
