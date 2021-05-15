@@ -1,3 +1,4 @@
+#ifdef flagMAIN
 #include <Core/Core.h>
 #include "TiledMap.h"
 
@@ -8,3 +9,4 @@ CONSOLE_APP_MAIN
 	TiledMapJson("C:\\Upp\\CV2D\\TiledMapReader\\test.json");
 	
 }
+#endif

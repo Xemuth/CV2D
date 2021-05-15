@@ -1,7 +1,11 @@
 uses
-	Core;
+	Core,
+	Skylark,
+	TiledMapReader;
 
 file
+	CV2DServer.h,
+	Handler.icpp,
 	CV2DServer.cpp;
 
 mainconfig
