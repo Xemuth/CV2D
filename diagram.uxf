@@ -1,0 +1,247 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="14.3.0">
+  <zoom_level>7</zoom_level>
+  <element>
+    <id>UMLDeployment</id>
+    <coordinates>
+      <x>756</x>
+      <y>280</y>
+      <w>147</w>
+      <h>63</h>
+    </coordinates>
+    <panel_attributes>Serveur NodeJS</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLDeployment</id>
+    <coordinates>
+      <x>1029</x>
+      <y>245</y>
+      <w>77</w>
+      <h>28</h>
+    </coordinates>
+    <panel_attributes>Client 1</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLDeployment</id>
+    <coordinates>
+      <x>1029</x>
+      <y>280</y>
+      <w>77</w>
+      <h>28</h>
+    </coordinates>
+    <panel_attributes>Client 2</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLDeployment</id>
+    <coordinates>
+      <x>1029</x>
+      <y>315</y>
+      <w>77</w>
+      <h>28</h>
+    </coordinates>
+    <panel_attributes>Client 3</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLDeployment</id>
+    <coordinates>
+      <x>1029</x>
+      <y>350</y>
+      <w>77</w>
+      <h>28</h>
+    </coordinates>
+    <panel_attributes>Client 4</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLDeployment</id>
+    <coordinates>
+      <x>1029</x>
+      <y>385</y>
+      <w>77</w>
+      <h>28</h>
+    </coordinates>
+    <panel_attributes>Client 5</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLDeployment</id>
+    <coordinates>
+      <x>553</x>
+      <y>252</y>
+      <w>140</w>
+      <h>112</h>
+    </coordinates>
+    <panel_attributes>Serveur de Jeu CV2D</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>896</x>
+      <y>259</y>
+      <w>147</w>
+      <h>63</h>
+    </coordinates>
+    <panel_attributes>lt=-</panel_attributes>
+    <additional_attributes>10.0;70.0;190.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>896</x>
+      <y>294</y>
+      <w>147</w>
+      <h>28</h>
+    </coordinates>
+    <panel_attributes>lt=-</panel_attributes>
+    <additional_attributes>10.0;20.0;190.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>896</x>
+      <y>301</y>
+      <w>147</w>
+      <h>49</h>
+    </coordinates>
+    <panel_attributes>lt=-</panel_attributes>
+    <additional_attributes>10.0;10.0;190.0;50.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>896</x>
+      <y>301</y>
+      <w>147</w>
+      <h>84</h>
+    </coordinates>
+    <panel_attributes>lt=-</panel_attributes>
+    <additional_attributes>10.0;10.0;190.0;100.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>896</x>
+      <y>301</y>
+      <w>147</w>
+      <h>119</h>
+    </coordinates>
+    <panel_attributes>lt=-</panel_attributes>
+    <additional_attributes>10.0;10.0;190.0;150.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>686</x>
+      <y>308</y>
+      <w>84</w>
+      <h>21</h>
+    </coordinates>
+    <panel_attributes>lt=-</panel_attributes>
+    <additional_attributes>10.0;10.0;100.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLDeployment</id>
+    <coordinates>
+      <x>1029</x>
+      <y>497</y>
+      <w>77</w>
+      <h>28</h>
+    </coordinates>
+    <panel_attributes>Client 1</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLDeployment</id>
+    <coordinates>
+      <x>749</x>
+      <y>490</y>
+      <w>147</w>
+      <h>63</h>
+    </coordinates>
+    <panel_attributes>Serveur NodeJS</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>889</x>
+      <y>511</y>
+      <w>154</w>
+      <h>21</h>
+    </coordinates>
+    <panel_attributes>lt=-</panel_attributes>
+    <additional_attributes>10.0;10.0;200.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>882</x>
+      <y>574</y>
+      <w>259</w>
+      <h>126</h>
+    </coordinates>
+    <panel_attributes>halign=left
+1: Connect and Identifie (retrieving ID or attributing ID)
+2: Look up for the map client want to connect to
+3: Send map to client. start to sent him Instance state</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLDeployment</id>
+    <coordinates>
+      <x>413</x>
+      <y>462</y>
+      <w>140</w>
+      <h>112</h>
+    </coordinates>
+    <panel_attributes>Serveur de Jeu CV2D</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>546</x>
+      <y>518</y>
+      <w>217</w>
+      <h>21</h>
+    </coordinates>
+    <panel_attributes>lt=-</panel_attributes>
+    <additional_attributes>10.0;10.0;290.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>546</x>
+      <y>581</y>
+      <w>231</w>
+      <h>119</h>
+    </coordinates>
+    <panel_attributes>halign=left
+
+2: Ask for a map and tell the ID of the fresh player
+3: Ask for instance state via command (GetState)</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>224</x>
+      <y>476</y>
+      <w>175</w>
+      <h>119</h>
+    </coordinates>
+    <panel_attributes>halign=left
+
+2: Look up for the ID and Add or 
+   refresh the player on the Instance.
+   return the map data 
+
+3: Send State of instance to NodeJS</panel_attributes>
+    <additional_attributes/>
+  </element>
+</diagram>
