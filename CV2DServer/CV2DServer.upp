@@ -3,8 +3,8 @@ uses
 	TiledMapReader;
 
 file
-	CV2DServer.h,
-	CV2DServer.cpp;
+	CV2DServer.cpp,
+	CV2DServer.h;
 
 mainconfig
 	"" = "";

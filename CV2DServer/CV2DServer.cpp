@@ -1,21 +1,66 @@
 #include <Core/Core.h>
+#include <csignal>
 #include "CV2DServer.h"
 
+
 #define LISTENING_PORT 64030
+#define TICK_RATE 10
 
 using namespace Upp;
 
-void CV2DServer::ProcessCommand(const Upp::String& cmd){
-	
+void CV2DServer::StartServer(){
+	serverThread.Start(THISBACK(ServerRoutine));
+	Upp::String command;
+	LOG("Command line interface ready");
+	while(command != "exit" && !secureStop){
+		command	= ToLower(ReadStdIn());
+		Cout() << ProcessCommandLine(command);
+	}
+	server.Close();
+	client.Close();
+	serverThread.ShutdownThreads();
+	serverThread.Wait();
 }
 
-void CV2DServer::SendServerState(unsigned int tickRate){
-	while(!Thread::IsShutdownThreads() && clientSocket.IsOpen() ){
-		
-		clientSocket.put( )
-		
-		sleep(60000/tickRate)
+void CV2DServer::StopServer(){
+	secureStop = true;
+	LOG("Shutdown asked..");
+}
+
+CV2DServer::~CV2DServer(){
+	server.Close();
+	client.Close();
+	serverThread.ShutdownThreads();
+	serverThread.Wait();
+}
+
+Upp::String CV2DServer::ProcessCommand(const Upp::String& cmd){
+	Value json = ParseJSON(cmd);
+	return "";
+}
+
+void CV2DServer::ServerRoutine(){
+	if(!server.Listen(port, 1)) {
+		LOG("Unable to initialize server socket on port " + AsString(port));
+		return;
 	}
+	LOG("Waiting for webServer...");
+	if(client.Accept(server)){
+		while(client.IsOpen()){
+			Upp::String incomingCmd = client.GetLine();
+			LOG("Receiving : " + incomingCmd + " from: " + client.GetPeerAddr());
+			Upp::String sendingCmd = ProcessCommand(incomingCmd);
+			LOG("Sending: " + sendingCmd + " To: " + client.GetPeerAddr());
+			client.Put(sendingCmd);
+			client.Put("\n");
+		}
+	}
+	LOG("Connection with webServer ended");
+}
+
+Upp::String CV2DServer::ProcessCommandLine(const Upp::String& command){
+	LOG("Command : " + command);
+	return "";
 }
 
 void SendMap(const Upp::String& mapName){
@@ -23,77 +68,22 @@ void SendMap(const Upp::String& mapName){
 }
 
 
-CV2DServer::CV2DServer(){
-	TcpSocket server;
-	if(!server.Listen(LISTENING_PORT, 1)) {
-		Cout() << "Unable to initialize server socket!\n";
-		SetExitCode(1);
-		return;
-	}
-	for(;;) {
-		Cout() << "Waiting for webServer..\n";
-		TcpSocket clientSocket;
-		if(s.Accept(server)) {
-			String w = clientSocket.GetLine();
-			
-			
-			
-			Cout() << "Request: " << w << " from: " << s.GetPeerAddr() << '\n';
-			if(w == "time")
-				s.Put(AsString(GetSysTime()));
-			else
-				s.Put(AsString(3 * atoi(~w)));
-			s.Put("\n");
+void Instance::SendInstanceState(){
+	while(!Thread::IsShutdownThreads() && clientSocket.IsOpen() ){
 		
+		//clientSocket.put( )
 		
-		
-		
-		}
+		//sleep(60000/tickRate);
 	}
 }
+
+CV2DServer* serverPtr;
 
 CONSOLE_APP_MAIN
 {
+	StdLogSetup(LOG_COUT | LOG_FILE | LOG_TIMESTAMP);
+	CV2DServer server(LISTENING_PORT, TICK_RATE);
+	serverPtr = &server;
+	std::signal(SIGINT,static_cast<__p_sig_fn_t>([](int s)->void{serverPtr->StopServer();}));
+	server.StartServer();
 }
-
-
-
-
-TcpSocket server;
-	if(!server.Listen(LISTENING_PORT)) {
-		LOG("Failed to start listening on 64 030..");
-		return;
-	}
-
-	for(;;) {
-		TcpSocket socket;
-		WebSocket ws;
-		try{
-			if(socket.Accept(server) && ws.WebAccept(socket)) {
-				LOG("Accepted connection");
-				Upp::String cmd = ws.Receive();
-				LOG("Commande : " + cmd);
-				Upp::String reponse = "";
-				if(cmd.IsEqual("GetState")){
-					reponse = AsString(X) + ";" + AsString(Y);
-				}else if(cmd.IsEqual("MoveLeft")){
-					X--;
-					reponse = "true";
-				}else if(cmd.IsEqual("MoveRight")){
-					X++;
-					reponse = "true";
-				}else if(cmd.IsEqual("MoveUp")){
-					Y++;
-					reponse = "true";
-				}else if(cmd.IsEqual("MoveDown")){
-					reponse = "false";
-				}
-				LOG("Reponse : " + reponse);
-				ws.SendText(reponse);
-			}
-			if(ws.IsError())
-				LOG("ERROR: " << ws.GetErrorDesc());
-		}catch(Upp::Exc& exception){
-			LOG("Exception : " + exception);
-		}
-	}

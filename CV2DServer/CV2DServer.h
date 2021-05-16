@@ -5,18 +5,18 @@
 
 namespace Upp{
 
-enum class Facing{Left = 1, Right = 2 , Up = 4, Down = 8 };
+enum class Facing:byte{Left = 1, Right = 2, Up = 4, Down = 8 };
 
 Upp::String FacingToString(byte facing){
 	Upp::String str;
-	if(facing & Right)
+	if(facing & (byte)Facing::Right)
 		str = "right";
-	else if
+	else
 		str = "left";
 	
-	if(facing & Up)
+	if(facing & (byte)Facing:: Up)
 		str = "up";
-	else if(facing & Facing::Down)
+	else if(facing & (byte)Facing::Down)
 		str = "down";
 	return str;
 }
@@ -24,11 +24,11 @@ Upp::String FacingToString(byte facing){
 // {Mapname, MapFilePath}
 Upp::VectorMap<Upp::String, Upp::String> maps;
 
-class Player{
+class Player : Upp::Moveable<Player>{
 	public:
-		Player(float _x, float _y, const Upp::String& _id) x(_x), y(_y), id(_id), facing(Facing::Down){}
+		Player(float _x, float _y, const Upp::String& _id) : x(_x), y(_y), id(_id), facing((byte)Facing::Down){}
 	
-		int GetId()const{return id;}
+		const Upp::String& GetId()const{return id;}
 		float GetX()const{return x;}
 		float GetY()const{return y;}
 		byte GetFacing()const{return facing;}
@@ -37,18 +37,18 @@ class Player{
 		
 		void Update(){
 			if(move){
-				if(facing & Facing::Left)
+				if(facing & (byte)Facing::Left)
 					x-=movespeed;
-				if(facing & Facing::Right)
+				if(facing & (byte)Facing::Right)
 					x+=movespeed;
-				if(facing & Facing::Up)
+				if(facing & (byte)Facing::Up)
 					y-=movespeed;
-				if(facing & Facing::Down)
+				if(facing & (byte)Facing::Down)
 					y+=movespeed;
 			}
 		}
 		
-		void Jsonize(JsonIO& json)const{
+		void Jsonize(Json& json)const{
 			json("id", id)
 				("facing", FacingToString(facing))
 				("x", x)
@@ -58,7 +58,7 @@ class Player{
 	private:
 		bool move = false;
 		byte facing;
-		float movespeed 0.16f
+		float movespeed = 0.16f;
 		
 		
 		Upp::String id;
@@ -69,35 +69,55 @@ class Player{
 
 class Instance{
 	public:
-		Instance(const Upp::String& filePath, TcpSocket clientSocket) : tiledMap(filePath){}
+		Instance(const Upp::String& filePath, TcpSocket& _clientSocket, unsigned int _tickRate, Mutex& _mutex) : tiledMap(filePath), clientSocket(_clientSocket), tickRate(_tickRate), mutex(_mutex){}
 		
 	private:
 		void SendInstanceState();
 		
+		
 		TiledMapJson tiledMap;
 		Vector<Player> players;
 		
+		Mutex& mutex;
+		unsigned int tickRate;
+		TcpSocket& clientSocket;
 		Thread stateSender;
 };
 
 class CV2DServer{
 	public:
-		CV2DServer();
-		
-		void ProcessCommand(const Upp::String& cmd);
-		
+		CV2DServer(unsigned int _port, unsigned int _tickRate) : port(_port), tickRate(_tickRate){}
+		~CV2DServer();
+		void StartServer();
+		void StopServer();
+		/*
 		void CreateInstance(const Upp::String& mapName);
 		void JoinInstance(const Upp::String& mapName);
 		void RemoveInstance();
 		
 		void ProcessMove();
 		void SendMap(const Upp::String& mapName){
-			LoadFile(f->FilePath);
+			//LoadFile(f->FilePath);
 		}
+		*/
 		
-		void StartServer();
+		typedef CV2DServer CLASSNAME;
+	
 	
 	private:
+		
+		bool secureStop = false;
+		
+		Upp::String ProcessCommand(const Upp::String& networkCmd);
+		Upp::String ProcessCommandLine(const Upp::String& command);
+		void ServerRoutine();
+		
+		unsigned int port;
+		unsigned int tickRate;
+		
+		Mutex mutex;
+		
+		Thread serverThread;
 		TcpSocket server;
 		TcpSocket client;
 };
