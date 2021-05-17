@@ -8,12 +8,31 @@
 
 using namespace Upp;
 
+
+String ReadCmd(int timeout)
+{
+	String r;
+	int time = msecs();
+	
+	while(msecs(time) < timeout){
+		int c = 0;
+		int n = read(STDIN_FILENO, (char*) &c, 1);
+		if(c == '\n')
+			break;
+		if(n > 0) {
+			r.Cat(c);
+			time = msecs();
+		}
+	}
+	return r.GetCount() ? r : String::GetVoid();
+}
+
 void CV2DServer::StartServer(){
 	serverThread.Start(THISBACK(ServerRoutine));
 	Upp::String command;
 	LOG("Command line interface ready");
 	while(command != "exit" && !secureStop){
-		command	= ToLower(ReadStdIn());
+		command	= ToLower(ReadCmd(1000));
 		Cout() << ProcessCommandLine(command);
 	}
 	server.Close();
@@ -76,6 +95,9 @@ void Instance::SendInstanceState(){
 		//sleep(60000/tickRate);
 	}
 }
+
+
+
 
 CV2DServer* serverPtr;
 
