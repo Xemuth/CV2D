@@ -80,8 +80,9 @@ void CV2DServer::ServerRoutine(){
 		return;
 	}
 	client.GlobalTimeout(1000);
+	LOG("Waiting for webServer...");
 	while(!Thread::IsShutdownThreads()){
-		LOG("Waiting for webServer...");
+		
 		if(client.Accept(server)){
 			LOG("WebServer connected");
 			int emptyData = 0;
