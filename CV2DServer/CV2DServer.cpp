@@ -111,13 +111,13 @@ void CV2DServer::ServerRoutine(){
 
 Upp::String CV2DServer::ProcessCommandNetwork(const Upp::String& cmd){
 	Value json = ParseJSON(cmd);
-	if(!IsNull(json["commande"])){
+	if(!IsNull(json["command"])){
 		if((~json["command"]).IsEqual("getmap")){
 			if(!IsNull(json["mapname"])){
 				return GetMap(json["mapname"]);
 			}
 			return GetErrorJson("getmap","mapname field is missing");
-		}else if((~json["command"]).IsEqual("keypressed")){
+		}else if((~json["command"]).IsEqual("keypressezd")){
 			
 		}
 	}
