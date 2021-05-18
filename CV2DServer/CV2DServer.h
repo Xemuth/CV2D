@@ -108,7 +108,7 @@ class CV2DServer{
 		
 		bool secureStop = false;
 		
-		Upp::String ProcessCommand(const Upp::String& networkCmd);
+		Upp::String ProcessCommandNetwork(const Upp::String& networkCmd);
 		Upp::String ProcessCommandLine(const Upp::String& command);
 		void ServerRoutine();
 		
