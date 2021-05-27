@@ -69,18 +69,20 @@ class Player : Upp::Moveable<Player>{
 
 class Instance{
 	public:
-		Instance(const Upp::String& filePath, TcpSocket& _clientSocket, unsigned int _tickRate, Mutex& _mutex) : tiledMap(filePath), clientSocket(_clientSocket), tickRate(_tickRate), mutex(_mutex){}
+		Instance(const Upp::String& filePath, unsigned int _tickRate, Mutex& _mutex);
 		
+		Vector<Player> GetPlayers(){return players;}
+		const Upp::String& GetID()const{return id;}
 	private:
 		void SendInstanceState();
 		
 		
 		TiledMapJson tiledMap;
 		Vector<Player> players;
-		
+		Upp::String id;
 		Mutex& mutex;
 		unsigned int tickRate;
-		TcpSocket& clientSocket;
+
 		Thread stateSender;
 };
 
@@ -90,8 +92,10 @@ class CV2DServer{
 		~CV2DServer();
 		void StartServer();
 		void StopServer();
+		
+		Instance& CreateInstance(const Upp::String& mapName);
+		
 		/*
-		void CreateInstance(const Upp::String& mapName);
 		void JoinInstance(const Upp::String& mapName);
 		void RemoveInstance();
 		
@@ -105,6 +109,7 @@ class CV2DServer{
 	
 	
 	private:
+		Upp::Array<Instance> instances;
 		
 		bool secureStop = false;
 		

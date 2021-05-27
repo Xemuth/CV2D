@@ -31,7 +31,7 @@ Upp::String GetErrorJson(const Upp::String& commandName, const Upp::String& erro
 	return "{\"command\":\""+ commandName +"\",\n\"error\":\"" + errorMessage +"\"}";
 }
 
-Upp::String GetMap(const String& mapName){
+Upp::String GetMap(const String& mapName, const Upp::String& instanceID){
 	if(FileExists(AllMapDirectories + mapName)){
 		TiledMapJson tiledMap(AllMapDirectories + mapName);
 		Upp::String ret;
@@ -39,7 +39,7 @@ Upp::String GetMap(const String& mapName){
 		for(const TiledTilesSet& set: tiledMap.GetTilesSets()){
 			ret << "\t{\n\"name\":\""+ Replace(set.GetSource(),{"tsx"},{"png"}) +"\",\n\t\t\"data\":\""+ Base64Encode(LoadFile(AllMapDirectories + Replace(set.GetSource(),{"tsx"},{"png"}))) +"\"\n\t},\n\t";
 		}
-		ret << "\n\t\t]\n}";
+		ret << "\n\t\t],\n\t\"instanceID\":\""+ instanceID +"\"\n}";
 		return ret;
 	}
 	return {};
@@ -72,8 +72,6 @@ CV2DServer::~CV2DServer(){
 	serverThread.Wait();
 }
 
-
-
 void CV2DServer::ServerRoutine(){
 	if(!server.Listen(port, 1)) {
 		LOG("Unable to initialize server socket on port " + AsString(port));
@@ -82,11 +80,10 @@ void CV2DServer::ServerRoutine(){
 	client.GlobalTimeout(1000);
 	LOG("Waiting for webServer...");
 	while(!Thread::IsShutdownThreads()){
-		
 		if(client.Accept(server)){
 			LOG("WebServer connected");
 			int emptyData = 0;
-			while(!client.IsError()){
+			while(!client.IsError() && !client.IsEof()){
 				Upp::String data = client.GetLine();
 				if(!client.IsTimeout()){
 					Upp::String sendingCmd = "";
@@ -114,15 +111,57 @@ Upp::String CV2DServer::ProcessCommandNetwork(const Upp::String& cmd){
 	if(!IsNull(json["command"])){
 		if((~json["command"]).IsEqual("getmap")){
 			if(!IsNull(json["mapname"])){
-				return GetMap(json["mapname"]);
+				if(FileExists(AllMapDirectories + mapName)){
+					try{
+						Instance& instance = CreateInstance(AllMapDirectories + mapName);
+						return GetMap(json["mapname"], instance.GetID());
+					}catch(Exc& exception){
+						return "";
+					}
+				}else{
+					return "{\"command\":\"error\",\"message\":\"Map don't exist\"}";
+				}
+				
 			}
 			return GetErrorJson("getmap","mapname field is missing");
-		}else if((~json["command"]).IsEqual("keypressezd")){
+		}else if((~json["command"]).IsEqual("keypressed")){
 			
+			for(Player& p : instance.GetPlayers()){
+				if(p.GetId().IsEqual(~json["playerID"])){
+					byte facing;
+					if(json["left"])
+						facing = facing | Facing::Left;
+					else
+						facing = facing & 0xFE;
+						
+					if(json["right"])
+						facing = facing | Facing::Right;
+					else
+						facing = facing & 0xFD;
+						
+					if(json["up"])
+						facing = facing | Facing::Up;
+					else
+						facing = facing & 0xFB;
+						
+					if(json["down"])
+						facing = facing | Facing::Down;
+					else
+						facing = facing & 0xF7
+					
+					p.UpdateFacing(facing)
+					p.UpdateMove(json["up"] | json["down"] | json["right"] | json["left"]);
+					return "{\"command\":\"success\"}";
+				}
+			}
 		}
 	}
 	if(cmd == "empty") return "";
 	return "error";
+}
+
+Instance& CV2DServer::CreateInstance(const Upp::String& mapName){
+	return instances.Create<Instance>(mapName, TICK_RATE, mutex);
 }
 
 Upp::String CV2DServer::ProcessCommandLine(const Upp::String& command){
@@ -145,6 +184,9 @@ void Instance::SendInstanceState(){
 }
 
 
+Instance::Instance(const Upp::String& filePath, unsigned int _tickRate, Mutex& _mutex) : tiledMap(filePath), clientSocket(_clientSocket), tickRate(_tickRate), mutex(_mutex){
+}
+
 
 
 CV2DServer* serverPtr;
@@ -152,7 +194,6 @@ CV2DServer* serverPtr;
 CONSOLE_APP_MAIN
 {
 	StdLogSetup(LOG_COUT | LOG_FILE | LOG_TIMESTAMP);
-	//Cout() << GetMap("test.json") <<"\n";
 	CV2DServer server(LISTENING_PORT, TICK_RATE);
 	serverPtr = &server;
 	std::signal(SIGINT,static_cast<__p_sig_fn_t>([](int s)->void{serverPtr->StopServer();}));
