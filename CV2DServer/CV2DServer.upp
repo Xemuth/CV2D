@@ -3,9 +3,15 @@ uses
 	TiledMapReader;
 
 file
+	main.cpp,
 	CV2DServer.cpp,
 	CV2DServer.h,
-	spec.md;
+	spec.md,
+	GameEngine readonly separator,
+	GameEngine.h,
+	Instance.h,
+	Player.h,
+	Player.cpp;
 
 mainconfig
 	"" = "";

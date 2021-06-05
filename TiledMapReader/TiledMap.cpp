@@ -2,10 +2,14 @@
 
 namespace Upp{
 
-TiledMapJson::TiledMapJson(const Upp::String& file){
+TiledMapJson::TiledOrientation ConverStringToTiledOrientation(const Upp::String& orientation);
+TiledMapJson::TiledRenderOrder ConverStringToTiledRenderOrder(const Upp::String& renderOrder);
+TiledMapJson::TiledType ConverStringToTiledType(const Upp::String& type);
+TiledLayer::TiledLayerType ConverStringToTiledLayerType(const Upp::String& layerType);
 
+TiledMapJson::TiledMapJson(const Upp::String& file)throw(){
 	ASSERT_(FileExists(file), "JSON File \"" + file + "\" don't exist");
-		
+	try{
 		Value json = ParseJSON(LoadFile(file));
 		
 		version = json["version"];
@@ -29,6 +33,9 @@ TiledMapJson::TiledMapJson(const Upp::String& file){
 		
 		ReadLayers(json["layers"]);
 		ReadTilesSets(json["tilesets"]);
+	}catch(Upp::Exc& exception){
+		throw exception;
+	}
 }
 
 void TiledMapJson::ReadLayers(const Value& jsonLayers){
@@ -68,40 +75,40 @@ TiledTilesSet::TiledTilesSet(const Value& jsonTilesSetObject){
 	source = jsonTilesSetObject["source"];
 }
 
-TiledOrientation ConverStringToTiledOrientation(const Upp::String& orientation){
+TiledMapJson::TiledOrientation ConverStringToTiledOrientation(const Upp::String& orientation){
 	if(ToLower(orientation).IsEqual("staggered"))
-		return TiledOrientation::Staggered;
+		return TiledMapJson::TiledOrientation::Staggered;
 	else if(ToLower(orientation).IsEqual("hexagonal"))
-		return TiledOrientation::Hexagonal;
+		return TiledMapJson::TiledOrientation::Hexagonal;
 	else if(ToLower(orientation).IsEqual("isometrique"))
-		return TiledOrientation::Isometrique;
+		return TiledMapJson::TiledOrientation::Isometrique;
 	else
-		return TiledOrientation::Orthogonal;
+		return TiledMapJson::TiledOrientation::Orthogonal;
 }
 
-TiledRenderOrder ConverStringToTiledRenderOrder(const Upp::String& renderOrder){
+TiledMapJson::TiledRenderOrder ConverStringToTiledRenderOrder(const Upp::String& renderOrder){
 	if(ToLower(renderOrder).IsEqual("left-down"))
-		return TiledRenderOrder::LeftDown;
+		return TiledMapJson::TiledRenderOrder::LeftDown;
 	else if(ToLower(renderOrder).IsEqual("left-up"))
-		return TiledRenderOrder::LeftUp;
+		return TiledMapJson::TiledRenderOrder::LeftUp;
 	else if(ToLower(renderOrder).IsEqual("right-up"))
-		return TiledRenderOrder::RightUp;
+		return TiledMapJson::TiledRenderOrder::RightUp;
 	else
-		return TiledRenderOrder::RightDown;
+		return TiledMapJson::TiledRenderOrder::RightDown;
 }
 
-TiledType ConverStringToTiledType(const Upp::String& type){
+TiledMapJson::TiledType ConverStringToTiledType(const Upp::String& type){
 	if(ToLower(type).IsEqual("map"))
-		return TiledType::Map;
+		return TiledMapJson::TiledType::Map;
 	else
-		return TiledType::Map;
+		return TiledMapJson::TiledType::Map;
 }
 
-TiledLayerType ConverStringToTiledLayerType(const Upp::String& layerType){
+TiledLayer::TiledLayerType ConverStringToTiledLayerType(const Upp::String& layerType){
 	if(ToLower(layerType).IsEqual("tilelayer"))
-		return TiledLayerType::TileLayer;
+		return TiledLayer::TiledLayerType::TileLayer;
 	else
-		return TiledLayerType::TileLayer;
+		return TiledLayer::TiledLayerType::TileLayer;
 }
 
 TiledTilesSet::~TiledTilesSet(){}
@@ -117,16 +124,16 @@ int TiledLayer::GetX()const{return x;}
 int TiledLayer::GetY()const{return y;}
 float TiledLayer::GetOpacity()const{return opacity;}
 bool TiledLayer::IsVisible()const{return visible;}
-TiledLayerType TiledLayer::GetType()const{return type;}
+TiledLayer::TiledLayerType TiledLayer::GetType()const{return type;}
 const ValueMap& TiledLayer::GetProperties()const{return properties;}
 TiledMapJson::~TiledMapJson(){}
 const Upp::String& TiledMapJson::GetVersion()const{return version;}
 const Upp::String& TiledMapJson::GetTiledVersion()const{return tiledVersion;}
 const Upp::Array<TiledLayer>& TiledMapJson::GetLayers()const{return layers;}
 const Upp::Array<TiledTilesSet>& TiledMapJson::GetTilesSets()const{return tilesSets;}
-TiledType TiledMapJson::GetTiledType()const{return type;}
-TiledOrientation TiledMapJson::GetTiledOrientation()const{return orientation;}
-TiledRenderOrder TiledMapJson::GetRenderOrder()const{return renderOrder;}
+TiledMapJson::TiledType TiledMapJson::GetTiledType()const{return type;}
+TiledMapJson::TiledOrientation TiledMapJson::GetTiledOrientation()const{return orientation;}
+TiledMapJson::TiledRenderOrder TiledMapJson::GetRenderOrder()const{return renderOrder;}
 bool TiledMapJson::IsInfinite()const{return infinite;}
 int TiledMapJson::GetCompressionLevel()const{return compressionLevel;}
 int TiledMapJson::GetTileHeight()const{return tileHeight;}

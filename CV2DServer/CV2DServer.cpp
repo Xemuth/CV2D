@@ -1,3 +1,5 @@
+
+/*
 #include <Core/Core.h>
 #include <csignal>
 #include "CV2DServer.h"
@@ -198,4 +200,4 @@ CONSOLE_APP_MAIN
 	serverPtr = &server;
 	std::signal(SIGINT,static_cast<__p_sig_fn_t>([](int s)->void{serverPtr->StopServer();}));
 	server.StartServer();
-}
+}*/
