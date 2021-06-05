@@ -5,11 +5,11 @@
 
 namespace Upp{
 
-class Player{
+class Player : Upp::Moveable<Player>{
 	public:
 		Player(const Upp::String& id, float x, float y, float speed);
 	
-		Upp::String GetId()const;
+		const Upp::String& GetId()const;
 		float GetSpeed()const;
 		float GetX()const;
 		float GetY()const;
@@ -33,6 +33,4 @@ class Player{
 };
 
 }
-
-
 #endif

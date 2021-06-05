@@ -7,10 +7,11 @@ TiledMapJson::TiledRenderOrder ConverStringToTiledRenderOrder(const Upp::String&
 TiledMapJson::TiledType ConverStringToTiledType(const Upp::String& type);
 TiledLayer::TiledLayerType ConverStringToTiledLayerType(const Upp::String& layerType);
 
-TiledMapJson::TiledMapJson(const Upp::String& file)throw(){
+TiledMapJson::TiledMapJson(const Upp::String& file) noexcept(false){
 	ASSERT_(FileExists(file), "JSON File \"" + file + "\" don't exist");
 	try{
-		Value json = ParseJSON(LoadFile(file));
+		data = LoadFile(file);
+		Value json = ParseJSON(data);
 		
 		version = json["version"];
 		tiledVersion = json["tiledversion"];
@@ -38,6 +39,34 @@ TiledMapJson::TiledMapJson(const Upp::String& file)throw(){
 	}
 }
 
+TiledMapJson::TiledMapJson(TiledMapJson&& map) : data(pick(map.data)){
+	version = map.version;
+	tiledVersion = map.tiledVersion;
+	
+	compressionLevel = map.compressionLevel;
+	infinite = map.infinite;
+	
+	type = map.type;
+	orientation = map.orientation;
+	renderOrder = map.renderOrder;
+
+	tileHeight = map.tileHeight;
+	tileWidth = map.tileWidth;
+	
+	width = map.width;
+	height = map.height;
+
+	nextLayerid = map.nextLayerid;
+	nextObjectid = map.nextObjectid;
+	
+	for(TiledLayer& layer : map.layers)
+		layers.Create(pick(layer));
+	
+	for(TiledTilesSet& tileSet : map.tilesSets)
+		tilesSets.Create(pick(tileSet));
+}
+
+
 void TiledMapJson::ReadLayers(const Value& jsonLayers){
 	for(int i = 0; i < jsonLayers.GetCount(); i++){
 		layers.Create(jsonLayers[i]);
@@ -51,18 +80,18 @@ void TiledMapJson::ReadTilesSets(const Value& jsonTilesSets){
 }
 
 TiledLayer::TiledLayer(const Value& jsonLayerObject){
-	Upp::String name = jsonLayerObject["name"];
+	name = jsonLayerObject["name"];
 	for(int i = 0; i < jsonLayerObject["data"].GetCount(); i++)
 		datas.Add(jsonLayerObject["data"][i]);
 		
-	bool visible = jsonLayerObject["visible"];
-	float opacity = jsonLayerObject["opacity"].Get<double>();
+	visible = jsonLayerObject["visible"];
+	opacity = jsonLayerObject["opacity"].Get<double>();
 	
-	int height = jsonLayerObject["height"];
-	int width = jsonLayerObject["width"];
-	int id = jsonLayerObject["id"];
-	int x = jsonLayerObject["x"];
-	int y = jsonLayerObject["y"];
+	height = jsonLayerObject["height"];
+	width = jsonLayerObject["width"];
+	id = jsonLayerObject["id"];
+	x = jsonLayerObject["x"];
+	y = jsonLayerObject["y"];
 	
 	type = ConverStringToTiledLayerType(jsonLayerObject["type"]);
 	
@@ -70,9 +99,32 @@ TiledLayer::TiledLayer(const Value& jsonLayerObject){
 		properties = jsonLayerObject["properties"];
 }
 
+TiledLayer::TiledLayer(TiledLayer&& layer){
+	name = layer.name;
+	for(int i : layer.datas)
+		datas.Add(i);
+	
+	visible = layer.visible;
+	opacity = layer.opacity;
+	
+	height = layer.height;
+	width = layer.width;
+	id = layer.id;
+	x = layer.x;
+	y = layer.y;
+	
+	type = layer.type;
+	properties = layer.properties;
+}
+
 TiledTilesSet::TiledTilesSet(const Value& jsonTilesSetObject){
 	firstGid = jsonTilesSetObject["firstGid"];
 	source = jsonTilesSetObject["source"];
+}
+
+TiledTilesSet::TiledTilesSet(TiledTilesSet&& set){
+	firstGid = set.firstGid;
+	source = set.source;
 }
 
 TiledMapJson::TiledOrientation ConverStringToTiledOrientation(const Upp::String& orientation){

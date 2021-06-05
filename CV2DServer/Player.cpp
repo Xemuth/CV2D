@@ -7,7 +7,7 @@ namespace Upp{
 	Player::Player(const Upp::String& id, float x, float y, float speed)
 	: d_x(x), d_y(y), d_speed(speed), d_id(id), d_facing(Player::Direction::DOWN){}
 	
-	Upp::String Player::GetId()const{return d_id;}
+	const Upp::String& Player::GetId()const{return d_id;}
 	float Player::GetSpeed()const{return d_speed;}
 	float Player::GetX()const{return d_x;}
 	float Player::GetY()const{return d_y;}

@@ -7,6 +7,7 @@ namespace Upp{
 class TiledTilesSet{
 	public:
 		TiledTilesSet(const Value& jsonTilesSetObject);
+		TiledTilesSet(TiledTilesSet&& set);
 		~TiledTilesSet();
 		
 		int GetFirstGID()const;
@@ -20,6 +21,7 @@ class TiledTilesSet{
 class TiledLayer{
 	public:
 		TiledLayer(const Value& jsonLayerObject);
+		TiledLayer(TiledLayer&& layer);
 		~TiledLayer();
 		
 		enum class TiledLayerType{TileLayer}; //To enhance to implement all possibilites
@@ -54,13 +56,15 @@ class TiledLayer{
 
 class TiledMapJson{
 	public:
-		TiledMapJson(const Upp::String& file)throw();
+		TiledMapJson(const Upp::String& file)noexcept(false);
+		TiledMapJson(TiledMapJson&& map);
 		~TiledMapJson();
 		
 		enum class TiledType{Map}; //To enhance to implement all possibilites
 		enum class TiledOrientation{Orthogonal, Isometrique, Staggered, Hexagonal};
 		enum class TiledRenderOrder{RightDown, RightUp, LeftDown, LeftUp};
 		
+		const Upp::String& GetData()const;
 		const Upp::String& GetVersion()const;
 		const Upp::String& GetTiledVersion()const;
 		const Upp::Array<TiledLayer>& GetLayers()const;
@@ -82,7 +86,7 @@ class TiledMapJson{
 		void ReadLayers(const Value& jsonLayers);
 		void ReadTilesSets(const Value& jsonTilesSets);
 		
-		
+		Upp::String data;
 		Upp::String version;
 		Upp::String tiledVersion;
 		

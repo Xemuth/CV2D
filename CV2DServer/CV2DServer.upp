@@ -11,6 +11,7 @@ file
 	GameEngine readonly separator,
 	GameEngine.h,
 	Instance.h,
+	Instance.cpp,
 	Player.h,
 	Player.cpp;
 
