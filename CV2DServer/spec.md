@@ -20,6 +20,9 @@ when the instance is created.
    │                        │                        │                        │
    └────────────────────────┘                        └────────────────────────┘
 ```
+![CV2D Game Server](https://i.imgur.com/cdPmbbB.png)
+
+
 ─────────────────────────────────────────────────────────────────────────────────────
 When a socket between CV2D (which is a client) and WebServer, then CV2D will send periodicaly the state
 of the actual instance. If this instance is empty (no player connected) for more than a predifined timeout.
