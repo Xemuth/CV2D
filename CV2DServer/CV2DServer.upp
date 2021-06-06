@@ -16,6 +16,3 @@ file
 	Player.h,
 	Player.cpp;
 
-mainconfig
-	"" = "USETUPLE";
-

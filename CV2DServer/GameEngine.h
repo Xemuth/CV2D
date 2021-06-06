@@ -23,32 +23,17 @@ class GameEngine{
 		struct Timeout{
 			Timeout(int instanceTm,  int mapTm, int playerTm);
 			int d_instance;
+			Upp::Vector<double> d_instancesTimeout;
 			int d_loadedMap;
+			Upp::Vector<double> d_mapsTimeout;
 			int d_player;
+			Upp::Vector<double> d_playersTimeout;
 		}d_timeout;
-		
-#ifdef flagUSETUPLE
-		Upp::VectorMap<double, Tuple<double, Instance>> d_instances; //<Id, < timer, Object>>
-		Upp::VectorMap<Upp::String, Tuple<double, TiledMapJson>> d_maps; //<FilePath, < timer, Object>>
-		Upp::VectorMap<Upp::String, Tuple<double, double>> d_players;//<Id, <timer, instanceid>>
-#else
-		struct TimeoutData : Upp::Moveable<TimeoutData>{
-			TimeoutData(double timer, const Upp::String& filePath);
-			TimeoutData(double timer, TiledMapJson&& map);
-			TimeoutData(double timer, TiledMapJson&& map, bool constuctMap);
-			TimeoutData(double timer, double instanceId);
-			
-			double d_timer;
-			union{
-				Instance d_instance;
-				TiledMapJson d_map;
-				double d_instanceId;
-			};
-		};
-		Upp::VectorMap<double, TimeoutData> d_instances;
-		Upp::VectorMap<Upp::String, TimeoutData> d_maps;
-		Upp::VectorMap<Upp::String, TimeoutData> d_players;
-#endif
+
+		Upp::Array<Instance> d_instances;
+		Upp::Array<TiledMapJson> d_maps;
+		Upp::VectorMap<Upp::String, double> d_players; // <playerId, instanceId>
+	
 		Thread d_thread;
 };
 
