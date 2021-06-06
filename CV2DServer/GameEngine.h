@@ -7,7 +7,7 @@ namespace Upp{
 
 class GameEngine{
 	public:
-		GameEngine(int instanceTimeout, int mapLoadedTimeout, int playerTimeout);
+		GameEngine(int instanceTimeout, int mapLoadedTimeout, int playerTimeout, int tickRate);
 		
 		const Upp::String& LoadMapData(const Upp::String& filePath) noexcept(false); //The loaded will remain #mapLoadedTimeout time loaded. It is refreshed when someone ask for it. if an instance is created with a map, then this one unload from the loaded map vector
 		
@@ -15,11 +15,14 @@ class GameEngine{
 		bool UpdatePlayer(const Upp::String& playerId, bool keyPressed, byte facing); //if a player remain away from keyboard (no key pressed during more than #playerTimeout) then it remove player from the instance
 		bool RemovePlayer(const Upp::String& playerId); //if player disconnect then it is possible to call this routin
 		
-		InstanceState GetInstanceState(double instanceId)const; //if instance state is not call for a period higher than #instanceTimeout then this instance is removed from game engine
+		InstanceState GetInstanceState(double instanceId); //if instance state is not call for a period higher than #instanceTimeout then this instance is removed from game engine
+		
+		void Update(); //ONLY FOR TEST PURPOSE, SHOULD BE PRIVATE AND TRIGGERED BY AN INTERNAL THREAD
 		
 	private:
 		const Upp::String& LoadAMap(const Upp::String& filepath) noexcept(false);
 		
+		int d_tickRate;
 		struct Timeout{
 			Timeout(int instanceTm,  int mapTm, int playerTm);
 			int d_instance;
