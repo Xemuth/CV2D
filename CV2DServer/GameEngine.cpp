@@ -103,7 +103,7 @@ const Upp::String& GameEngine::LoadAMap(const Upp::String& filepath) noexcept(fa
 }
 
 bool GameEngine::UpdatePlayer(const Upp::String& playerId, bool keyPressed, byte facing){
-	LLOG("[GameEngine::UpdatePlayer] Trying to update player id \"" + playerId +"\" ");
+	LLOG("[GameEngine::UpdatePlayer] Trying to update player id \"" + playerId +"\". KeyPressed: " + AsString(keyPressed) + " Facing: " + Format64Hex(facing));
 	for(int e = 0; e < d_players.GetCount(); e++){
 		const Upp::String& pid = d_players.GetKey(e);
 		if(pid.IsEqual(playerId)){

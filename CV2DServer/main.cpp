@@ -1,5 +1,6 @@
 #include <Core/Core.h>
 #include "GameEngine.h"
+
 using namespace Upp;
 
 CONSOLE_APP_MAIN
@@ -18,11 +19,11 @@ CONSOLE_APP_MAIN
 				
 				LOG("Player ID: " + p.d_id);
 				LOG("X: " + AsString(p.d_x) +", Y: " + AsString(p.d_y));
-				LOG("facing: " );
-				DUMPHEX(p.d_facing);
+				LOG("facing: " +  Format64Hex(p.d_facing));
 			}
 			LOG("-----------------------------------------------");
 		}
+		ge.RemovePlayer("p1");
 		Sleep(400000);
 	}catch(Exc& exception){
 		LOG("Exception : " + exception);
