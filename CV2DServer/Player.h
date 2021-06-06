@@ -5,6 +5,16 @@
 
 namespace Upp{
 
+class Player;
+
+struct PlayerState : Upp::Moveable<PlayerState>{
+	PlayerState(const Player& p);
+	Upp::String d_id;
+	float d_x;
+	float d_y;
+	byte d_facing;
+};
+
 class Player : Upp::Moveable<Player>{
 	public:
 		Player(const Upp::String& id, float x, float y, float speed);
@@ -24,6 +34,7 @@ class Player : Upp::Moveable<Player>{
 		enum Direction : byte{ UP = 0x1, DOWN = 0x2, LEFT = 0x4, RIGHT = 0x8};
 		
 	private:
+		friend PlayerState;
 		Upp::String d_id;
 		bool d_moving;
 		float d_x;

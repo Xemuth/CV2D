@@ -7,9 +7,17 @@
 
 namespace Upp{
 
+class Instance;
+
+struct InstanceState{
+	InstanceState(const Instance& instance);
+	Vector<PlayerState> d_ps;
+	double d_id;
+};
+
 class Instance{
 	public:
-		Instance(TiledMapJson&& map);
+		Instance(TiledMapJson&& map, double id = 0);
 		
 		bool AddPlayer(const Upp::String& id);
 		bool RemovePlayer(const Upp::String& id);
@@ -20,8 +28,11 @@ class Instance{
 		const TiledMapJson& GetMap()const;
 		const Vector<Player>& GetPlayers()const;
 		
+		InstanceState GetInstanceState()const;
+		
 		void Update();
 	private:
+		friend InstanceState;
 		double d_id;
 		TiledMapJson d_map;
 		Upp::Vector<Player> d_players;

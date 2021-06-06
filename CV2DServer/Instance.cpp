@@ -2,8 +2,9 @@
 
 namespace Upp{
 	
-Instance::Instance(TiledMapJson&& map) : d_map(pick(map)){
-	d_id = GetHashValue(GetSysTime().Get());
+Instance::Instance(TiledMapJson&& map, double id) : d_id(id), d_map(pick(map)){
+	if(id == 0)
+		d_id = GetHashValue(GetSysTime().Get());
 }
 	
 bool Instance::AddPlayer(const Upp::String& id){
@@ -52,6 +53,16 @@ const Vector<Player>& Instance::GetPlayers()const{
 	return d_players;
 }
 
+InstanceState::InstanceState(const Instance& instance){
+	for(const Player& p : instance.d_players){
+		d_ps.Create(p);
+	}
+	d_id = instance.d_id;
+}
+
+InstanceState Instance::GetInstanceState()const{
+	return InstanceState{*this};
+}
 
 void Instance::Update(){
 	for(Player& p : d_players){

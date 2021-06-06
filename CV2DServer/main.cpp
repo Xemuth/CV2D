@@ -1,5 +1,5 @@
 #include <Core/Core.h>
-#include "Instance.h"
+#include "GameEngine.h"
 using namespace Upp;
 
 CONSOLE_APP_MAIN

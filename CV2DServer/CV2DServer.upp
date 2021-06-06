@@ -10,11 +10,12 @@ file
 	spec.md,
 	GameEngine readonly separator,
 	GameEngine.h,
+	GameEngine.cpp,
 	Instance.h,
 	Instance.cpp,
 	Player.h,
 	Player.cpp;
 
 mainconfig
-	"" = "";
+	"" = "USETUPLE";
 

@@ -29,4 +29,11 @@ namespace Upp{
 				d_y += d_speed * MOVING_FACTOR;
 		}
 	}
+	
+	PlayerState::PlayerState(const Player& p){
+		d_id = p.d_id;
+		d_x = p.d_x;
+		d_y = p.d_y;
+		d_facing = p.d_facing;
+	}
 }

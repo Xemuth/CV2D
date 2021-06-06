@@ -10,6 +10,7 @@ TiledLayer::TiledLayerType ConverStringToTiledLayerType(const Upp::String& layer
 TiledMapJson::TiledMapJson(const Upp::String& file) noexcept(false){
 	ASSERT_(FileExists(file), "JSON File \"" + file + "\" don't exist");
 	try{
+		path = file;
 		data = LoadFile(file);
 		Value json = ParseJSON(data);
 		
@@ -39,7 +40,7 @@ TiledMapJson::TiledMapJson(const Upp::String& file) noexcept(false){
 	}
 }
 
-TiledMapJson::TiledMapJson(TiledMapJson&& map) : data(pick(map.data)){
+TiledMapJson::TiledMapJson(TiledMapJson&& map) : data(pick(map.data)), path(pick(map.path)){
 	version = map.version;
 	tiledVersion = map.tiledVersion;
 	
@@ -65,6 +66,7 @@ TiledMapJson::TiledMapJson(TiledMapJson&& map) : data(pick(map.data)){
 	for(TiledTilesSet& tileSet : map.tilesSets)
 		tilesSets.Create(pick(tileSet));
 }
+
 
 
 void TiledMapJson::ReadLayers(const Value& jsonLayers){
@@ -179,6 +181,8 @@ bool TiledLayer::IsVisible()const{return visible;}
 TiledLayer::TiledLayerType TiledLayer::GetType()const{return type;}
 const ValueMap& TiledLayer::GetProperties()const{return properties;}
 TiledMapJson::~TiledMapJson(){}
+const Upp::String& TiledMapJson::GetPath()const{return path;}
+const Upp::String& TiledMapJson::GetData()const{return data;}
 const Upp::String& TiledMapJson::GetVersion()const{return version;}
 const Upp::String& TiledMapJson::GetTiledVersion()const{return tiledVersion;}
 const Upp::Array<TiledLayer>& TiledMapJson::GetLayers()const{return layers;}
