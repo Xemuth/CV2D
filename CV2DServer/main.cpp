@@ -11,7 +11,7 @@ CONSOLE_APP_MAIN
 		ge.UpdatePlayer("p1", true, Player::Direction::UP);
 
 		for(int e = 0; e < 10; e++){
-			ge.Update(); //ONLY FOR TEST PURPOSE, SHOULD BE PRIVATE AND TRIGGERED BY AN INTERNAL THREAD
+			//ge.Update(); //ONLY FOR TEST PURPOSE, SHOULD BE PRIVATE AND TRIGGERED BY AN INTERNAL THREAD
 			InstanceState is = ge.GetInstanceState(instanceId);
 			LOG("instance Id : " + AsString(is.d_id));
 			for(PlayerState& p : is.d_ps){
@@ -23,6 +23,7 @@ CONSOLE_APP_MAIN
 			}
 			LOG("-----------------------------------------------");
 		}
+		Sleep(400000);
 	}catch(Exc& exception){
 		LOG("Exception : " + exception);
 	}

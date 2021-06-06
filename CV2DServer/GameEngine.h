@@ -8,6 +8,7 @@ namespace Upp{
 class GameEngine{
 	public:
 		GameEngine(int instanceTimeout, int mapLoadedTimeout, int playerTimeout, int tickRate);
+		~GameEngine();
 		
 		const Upp::String& LoadMapData(const Upp::String& filePath) noexcept(false); //The loaded will remain #mapLoadedTimeout time loaded. It is refreshed when someone ask for it. if an instance is created with a map, then this one unload from the loaded map vector
 		
@@ -17,9 +18,15 @@ class GameEngine{
 		
 		InstanceState GetInstanceState(double instanceId); //if instance state is not call for a period higher than #instanceTimeout then this instance is removed from game engine
 		
-		void Update(); //ONLY FOR TEST PURPOSE, SHOULD BE PRIVATE AND TRIGGERED BY AN INTERNAL THREAD
-		
+		typedef GameEngine CLASSNAME;
 	private:
+		
+		void Janitor();
+		void Updater(); //ONLY FOR TEST PURPOSE, SHOULD BE PRIVATE AND TRIGGERED BY AN INTERNAL THREAD
+		
+		void RemovePlayerAdvance(const Upp::String& id);
+		void RemoveInstanceAdvance(double id);
+		
 		const Upp::String& LoadAMap(const Upp::String& filepath) noexcept(false);
 		
 		int d_tickRate;
@@ -37,7 +44,8 @@ class GameEngine{
 		Upp::Array<TiledMapJson> d_maps;
 		Upp::VectorMap<Upp::String, double> d_players; // <playerId, instanceId>
 	
-		Thread d_thread;
+		Thread d_threadJanitor;
+		Thread d_threadUpdater;
 };
 
 }

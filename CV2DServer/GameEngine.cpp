@@ -4,8 +4,16 @@
 
 namespace Upp{
 
-GameEngine::GameEngine(int instanceTimeout, int mapLoadedTimeout, int playerTimeout, int tickRate) : d_timeout(instanceTimeout, mapLoadedTimeout, playerTimeout), d_tickRate(tickRate){}
-
+GameEngine::GameEngine(int instanceTimeout, int mapLoadedTimeout, int playerTimeout, int tickRate) : d_timeout(instanceTimeout, mapLoadedTimeout, playerTimeout), d_tickRate(tickRate){
+	d_threadUpdater.Run(THISBACK(Updater));
+	d_threadJanitor.Run(THISBACK(Janitor));
+}
+GameEngine::~GameEngine(){
+	d_threadUpdater.ShutdownThreads();
+	d_threadUpdater.Wait();
+	d_threadJanitor.ShutdownThreads();
+	d_threadJanitor.Wait();
+}
 const Upp::String& GameEngine::LoadMapData(const Upp::String& filePath) noexcept(false){
 	LLOG("[GameEngine::LoadMapData] Loading map data \"" +  filePath + "\"");
 	for(Instance& instance : d_instances){
@@ -160,11 +168,82 @@ InstanceState GameEngine::GetInstanceState(double instanceId){
 	throw Exc("No instance with id \""+ AsString(instanceId) + "\" has been found");
 }
 
-void GameEngine::Update(){
-	for(Instance& inst : d_instances){
-		inst.Update();
+void GameEngine::Updater(){
+	LLOG("[GameEngine::Updater] Updater thread starting");
+	while(!d_threadUpdater.IsShutdownThreads()){
+		Sleep(1000/d_tickRate);
+		for(Instance& inst : d_instances){
+			inst.Update();
+		}
+	}
+	LLOG("[GameEngine::Updater] Updater thread stoping");
+}
+
+void GameEngine::RemovePlayerAdvance(const Upp::String& id){
+	for(int e = 0; e < d_players.GetCount(); e++){
+		if(d_players.GetKey(e).IsEqual(id)){
+			for(int i = 0; i < d_instances.GetCount(); i++){
+				if(d_instances[i].GetId() == d_players.Get(d_players.GetKey(e))){
+					d_instances[i].RemovePlayer(id);
+					d_players.Remove(e);
+					d_timeout.d_playersTimeout.Remove(e);
+					return;
+				}
+			}
+			break;
+		}
 	}
 }
+void GameEngine::RemoveInstanceAdvance(double id){
+	for(int e = 0; e < d_instances.GetCount(); e++){
+		Instance& inst = d_instances[e];
+		if(inst.GetId() == id){
+			for(const Player& p : inst.GetPlayers()){
+				RemovePlayer(p.GetId());
+			}
+			d_instances.Remove(e);
+			d_timeout.d_instancesTimeout.Remove(e);
+			break;
+		}
+	}
+}
+
+
+
+void GameEngine::Janitor(){
+	LLOG("[GameEngine::Janitor] Janitor thread starting");
+	while(!d_threadJanitor.IsShutdownThreads()){
+		for(int e = 0; e < 60; e++){
+			if(d_threadJanitor.IsShutdownThreads())
+				break;
+			Sleep(1000);
+		}
+		for(int e = 0; e < d_timeout.d_playersTimeout.GetCount(); e++){
+			if((GetSysTime().Get() - d_timeout.d_playersTimeout[e]) > d_timeout.d_player){
+				LLOG("[GameEngine::Janitor] Player " + d_players.GetKey(e) + " have timeout");
+				RemovePlayerAdvance(d_players.GetKey(e));
+				e--;
+			}
+		}
+		for(int e = 0; e < d_timeout.d_mapsTimeout.GetCount(); e++){
+			if((GetSysTime().Get() - d_timeout.d_mapsTimeout[e]) > d_timeout.d_loadedMap){
+				LLOG("[GameEngine::Janitor] Map " + d_maps[e].GetPath() + " have timeout");
+				d_maps.Remove(e);
+				d_timeout.d_mapsTimeout.Remove(e);
+				e--;
+			}
+		}
+		for(int e = 0; e < d_timeout.d_instancesTimeout.GetCount(); e++){
+			if((GetSysTime().Get() - d_timeout.d_instancesTimeout[e]) > d_timeout.d_instance){
+				LLOG("[GameEngine::Janitor] Instance " + AsString(d_instances[e].GetId()) + " have timeout");
+				RemoveInstanceAdvance(d_instances[e].GetId());
+				e--;
+			}
+		}
+	}
+	LLOG("[GameEngine::Janitor] Janitor thread stoping");
+}
+
 			
 GameEngine::Timeout::Timeout(int instanceTm,  int mapTm, int playerTm) : d_instance(instanceTm), d_loadedMap(mapTm), d_player(playerTm){}
 
