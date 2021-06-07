@@ -76,7 +76,7 @@ class TiledMapJson{
 		bool IsInfinite()const;
 		int GetCompressionLevel()const;
 		int GetTileHeight()const;
-		int GetTileWidgth()const;
+		int GetTileWidth()const;
 		int GetWidth()const;
 		int GetHeight()const;
 		int GetNextLayerId()const;

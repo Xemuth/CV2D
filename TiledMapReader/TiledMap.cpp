@@ -193,7 +193,7 @@ TiledMapJson::TiledRenderOrder TiledMapJson::GetRenderOrder()const{return render
 bool TiledMapJson::IsInfinite()const{return infinite;}
 int TiledMapJson::GetCompressionLevel()const{return compressionLevel;}
 int TiledMapJson::GetTileHeight()const{return tileHeight;}
-int TiledMapJson::GetTileWidgth()const{return tileWidth;}
+int TiledMapJson::GetTileWidth()const{return tileWidth;}
 int TiledMapJson::GetWidth()const{return width;}
 int TiledMapJson::GetHeight()const{return height;}
 int TiledMapJson::GetNextLayerId()const{return nextLayerid;}

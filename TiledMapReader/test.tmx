@@ -18,14 +18,14 @@
    <property name="solid" type="bool" value="true"/>
   </properties>
   <data encoding="csv">
-59,86,86,86,60,
-131,0,0,0,132,
+86,86,86,86,60,
+0,0,0,0,132,
 131,0,0,0,132,
 131,0,193,194,132,
 83,110,110,110,84
 </data>
  </layer>
- <layer id="4" name="above" width="5" height="5">
+ <layer id="4" name="above" width="5" height="5" visible="0">
   <data encoding="csv">
 0,0,0,0,0,
 0,0,0,0,0,

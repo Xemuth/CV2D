@@ -32,6 +32,10 @@ class Instance{
 		
 		void Update();
 	private:
+		bool CheckForColision(const Pointf& p);
+		bool IsOutOfBound(const Pointf& p);
+		Pointf GetDefaultPos();
+		
 		friend InstanceState;
 		double d_id;
 		TiledMapJson d_map;

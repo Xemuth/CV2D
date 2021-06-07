@@ -208,8 +208,6 @@ void GameEngine::RemoveInstanceAdvance(double id){
 	}
 }
 
-
-
 void GameEngine::Janitor(){
 	LLOG("[GameEngine::Janitor] Janitor thread starting");
 	while(!d_threadJanitor.IsShutdownThreads()){
