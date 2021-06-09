@@ -8,5 +8,5 @@ Working repository of CV2D project.
 
 **Server**: Simple websocket server for testing purpose. *C. Xemuth Hamon*
 
-
+**CV2D**: Project folder
 

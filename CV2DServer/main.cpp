@@ -1,6 +1,6 @@
 #include <Core/Core.h>
 #include "GameEngine.h"
-
+#include "Server.h"
 using namespace Upp;
 
 CONSOLE_APP_MAIN
