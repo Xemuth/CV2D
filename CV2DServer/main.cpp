@@ -27,7 +27,7 @@ CONSOLE_APP_MAIN
 		RemoteInterface remote("127.0.0.1", 9555, 300, 300, 300, 60);
 		remote.Start();
 		Upp::String command;
-		LOG("Command line interface ready");
+		LOG("CV2D >> Command line interface ready");
 		while(remote.IsStarted()){
 			Cout() << "CV2D << ";
 			command	= ToLower(ReadCmd(1000));
