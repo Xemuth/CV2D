@@ -4,16 +4,27 @@
 
 namespace Upp{
 
-GameEngine::GameEngine(int instanceTimeout, int mapLoadedTimeout, int playerTimeout, int tickRate) : d_timeout(instanceTimeout, mapLoadedTimeout, playerTimeout), d_tickRate(tickRate){
+GameEngine::GameEngine(int instanceTimeout, int mapLoadedTimeout, int playerTimeout, int tickRate) : d_timeout(instanceTimeout, mapLoadedTimeout, playerTimeout), d_tickRate(tickRate), d_ready(false){}
+GameEngine::~GameEngine(){ Stop();}
+
+void GameEngine::Start(){
+	d_stopThread = false;
 	d_threadUpdater.Run(THISBACK(Updater));
 	d_threadJanitor.Run(THISBACK(Janitor));
+	WaitIsReady();
 }
-GameEngine::~GameEngine(){
-	d_threadUpdater.ShutdownThreads();
+
+bool GameEngine::IsReady(){
+	return d_ready;
+}
+
+void GameEngine::Stop(){
+	d_stopThread = true;
+	d_ready = false;
 	d_threadUpdater.Wait();
-	d_threadJanitor.ShutdownThreads();
 	d_threadJanitor.Wait();
 }
+
 const Upp::String& GameEngine::LoadMapData(const Upp::String& filePath) noexcept(false){
 	LLOG("[GameEngine::LoadMapData] Loading map data \"" +  filePath + "\"");
 	for(Instance& instance : d_instances){
@@ -169,14 +180,14 @@ InstanceState GameEngine::GetInstanceState(double instanceId){
 }
 
 void GameEngine::Updater(){
-	LLOG("[GameEngine::Updater] Updater thread starting");
-	while(!d_threadUpdater.IsShutdownThreads()){
+	LLOG("[GameEngine][Updater] Updater thread started");
+	while(!d_stopThread){
 		Sleep(1000/d_tickRate);
 		for(Instance& inst : d_instances){
 			inst.Update();
 		}
 	}
-	LLOG("[GameEngine::Updater] Updater thread stoping");
+	LLOG("[GameEngine][Updater] Updater thread stopped");
 }
 
 void GameEngine::RemovePlayerAdvance(const Upp::String& id){
@@ -208,11 +219,19 @@ void GameEngine::RemoveInstanceAdvance(double id){
 	}
 }
 
+void GameEngine::WaitIsReady(){
+	while(!d_ready){
+		Sleep(10); // I don't like that
+	}
+}
+
+
 void GameEngine::Janitor(){
 	LLOG("[GameEngine::Janitor] Janitor thread starting");
-	while(!d_threadJanitor.IsShutdownThreads()){
+	d_ready = true;
+	while(!d_stopThread){
 		for(int e = 0; e < 60; e++){
-			if(d_threadJanitor.IsShutdownThreads())
+			if(d_stopThread)
 				break;
 			Sleep(1000);
 		}

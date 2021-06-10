@@ -10,6 +10,10 @@ class GameEngine{
 		GameEngine(int instanceTimeout, int mapLoadedTimeout, int playerTimeout, int tickRate);
 		~GameEngine();
 		
+		void Start();
+		void Stop();
+		bool IsReady();
+		
 		const Upp::String& LoadMapData(const Upp::String& filePath) noexcept(false); //The loaded will remain #mapLoadedTimeout time loaded. It is refreshed when someone ask for it. if an instance is created with a map, then this one unload from the loaded map vector
 		
 		double AddPlayer(const Upp::String& playerId, const Upp::String& mapFilePath) noexcept(false); //when a player want to be added to a map that isnt yet instantiate or loaded, then it try to load it and instantiate it before adding the player.
@@ -23,6 +27,8 @@ class GameEngine{
 		
 		void Janitor();
 		void Updater(); //ONLY FOR TEST PURPOSE, SHOULD BE PRIVATE AND TRIGGERED BY AN INTERNAL THREAD
+		
+		void WaitIsReady();
 		
 		void RemovePlayerAdvance(const Upp::String& id);
 		void RemoveInstanceAdvance(double id);
@@ -39,7 +45,9 @@ class GameEngine{
 			int d_player;
 			Upp::Vector<double> d_playersTimeout;
 		}d_timeout;
-
+		bool d_stopThread;
+		bool d_ready;
+		
 		Upp::Array<Instance> d_instances;
 		Upp::Array<TiledMapJson> d_maps;
 		Upp::VectorMap<Upp::String, double> d_players; // <playerId, instanceId>

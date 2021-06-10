@@ -9,23 +9,31 @@ class Server{
 		Server(const Upp::String& webServeurIp, int listeningPort);
 		~Server();
 		
-		void SetCallbackClient(Function<Upp::String (Upp::String)>& callback);
-		void SetCallbackServer(Function<Upp::String (Upp::String)>& callback);
+		void SetCallbackClient(const Function<Upp::String (const TcpSocket& socket, const Upp::String&)>& callback);
+		void SetCallbackServer(const Function<Upp::String (const TcpSocket& socket, const Upp::String&)>& callback);
+		void RemoveCallbackClient();
+		void RemoveCallbackServer();
 		
 		bool HaveCallbackClient()const;
 		bool HaveCallbackServer()const;
 		
-		void Run();
+		void Start();
 		void Stop();
+		bool IsReady();
 		
-		void ConnectNewClient(const Upp::String& addr, int port);
+		const TcpSocket& ConnectNewClient(const Upp::String& addr, int port);
 
 	private:
 		void Connection(TcpSocket& socket, int position);
 		void Listener();
 		
-		Function<Upp::String (Upp::String)> d_callbackClient;
-		Function<Upp::String (Upp::String)> d_callbackServer;
+		void WaitIsReady();
+		
+		bool d_ready;
+		bool d_stopThread;
+		
+		Function<Upp::String (const TcpSocket& socket, const Upp::String&)> d_callbackClient;
+		Function<Upp::String (const TcpSocket& socket, const Upp::String&)> d_callbackServer;
 		Array<Thread> d_clients;
 		Array<TcpSocket> d_sockets;
 		Thread d_server;
