@@ -22,8 +22,15 @@ class RemoteInterface{
 		typedef RemoteInterface CLASSNAME;
 		
 	private:
+		Upp::String GetMap(const Upp::String& cmd,const ValueMap& args);
+		
+		
+		enum Target: byte{COMMAND_LINE = 0x1, WEB_SERVER = 0x2, CLIENT = 0x4};
 		Upp::String CommandClient(const TcpSocket& socket, const Upp::String& str);
 		Upp::String CommandServer(const TcpSocket& socket, const Upp::String& str);
+		
+		Upp::String DispatchCommand(Target target , const TcpSocket& socket, const Upp::String& cmd,const ValueMap& args);
+		Upp::String BuildResponse(const Upp::String& cmd, const ValueMap& args)const;
 		
 		void WaitIsReady();
 

@@ -2,6 +2,8 @@
 
 #define LLOG(x)   LOG(x)
 
+static const Upp::String GLOBAL_FILEPATH = "C:\\Upp\\CV2D\\TiledMapReader\\";
+
 namespace Upp{
 
 GameEngine::GameEngine(int instanceTimeout, int mapLoadedTimeout, int playerTimeout, int tickRate) : d_timeout(instanceTimeout, mapLoadedTimeout, playerTimeout), d_tickRate(tickRate), d_ready(false){}
@@ -25,19 +27,19 @@ void GameEngine::Stop(){
 	d_threadJanitor.Wait();
 }
 
-const Upp::String& GameEngine::LoadMapData(const Upp::String& filePath) noexcept(false){
+const TiledMapJson& GameEngine::LoadMapData(const Upp::String& filePath) noexcept(false){
 	LLOG("[GameEngine::LoadMapData] Loading map data \"" +  filePath + "\"");
 	for(Instance& instance : d_instances){
 		if(instance.GetMap().GetPath().IsEqual(filePath)){
 			LLOG("[GameEngine::LoadMapData] map found in instance id \"" +  AsString(instance.GetId()) + "\"");
-			return instance.GetMap().GetData();
+			return instance.GetMap();
 		}
 	}
 	for(int e = 0; e < d_maps.GetCount(); e++){
 		if(d_maps[e].GetPath().IsEqual(filePath)){
 			d_timeout.d_mapsTimeout[e] = GetSysTime().Get(); //We refresh timer
 			LLOG("[GameEngine::LoadMapData] map is already loaded, returning data");
-			return d_maps[e].GetData();
+			return d_maps[e];
 		}
 	}
 	//This map has not been found, we need to load it, and ensure it's correct. if it's
@@ -51,14 +53,14 @@ const Upp::String& GameEngine::LoadMapData(const Upp::String& filePath) noexcept
 	}
 }
 
-double GameEngine::AddPlayer(const Upp::String& playerId, const Upp::String& mapFilePath) noexcept(false){
+double GameEngine::AddPlayer(const Upp::String& playerId, const Upp::String& mapName) noexcept(false){
 	LLOG("[GameEngine::AddPlayer] Adding a player with id \"" + playerId + "\" in progress...");
 	if(d_players.Find(playerId) != -1){
 		LLOG("[GameEngine::AddPlayer] Player id \"" + playerId +"\" already exist. Exception throw");
 		throw Upp::Exc("Player id \"" + playerId +"\" already exist");
 	}
 	for(Instance& ins : d_instances){
-		if(ins.GetMap().GetPath().IsEqual(mapFilePath)){
+		if(ins.GetMap().GetName().IsEqual(mapName)){
 			if(!ins.AddPlayer(playerId)){
 				LLOG("[GameEngine::AddPlayer] Player id \"" + playerId +"\" already exist in instance id \""+ ins.GetId() +"\". Exception throw");
 				throw Upp::Exc("Player id \"" + playerId +"\" already exist in instance id \""+ ins.GetId() +"\"");
@@ -69,11 +71,11 @@ double GameEngine::AddPlayer(const Upp::String& playerId, const Upp::String& map
 			return ins.GetId();
 		}
 	}
-	LLOG("[GameEngine::AddPlayer] No instance have been found with map filePath \"" + mapFilePath + "\". Creating instance in progress...");
+	LLOG("[GameEngine::AddPlayer] No instance have been found with map name \"" + mapName + "\". Creating instance in progress...");
 	for(int e = 0; e < 2; e++){
 		int iterator = 0;
 		for(TiledMapJson& map : d_maps){
-			if(map.GetPath().IsEqual(mapFilePath)){
+			if(map.GetName().IsEqual(mapName)){
 				LLOG("[GameEngine::AddPlayer] Map have been found, instance creation in progress...");
 				Instance& instance = d_instances.Create(pick(map));
 				d_timeout.d_instancesTimeout.Add(GetSysTime().Get());
@@ -91,7 +93,7 @@ double GameEngine::AddPlayer(const Upp::String& playerId, const Upp::String& map
 		}
 		try{
 			LLOG("[GameEngine::AddPlayer] map is not already load or used in an instance. Loading in progress...");
-			LoadAMap(mapFilePath);
+			LoadAMap(mapName);
 		}catch(Exc& exception){
 			throw exception;
 		}
@@ -99,16 +101,16 @@ double GameEngine::AddPlayer(const Upp::String& playerId, const Upp::String& map
 	throw Upp::Exc("ALERT ! AddPlayer have loaded multiple dummy map and created multiple instance of the same map");
 }
 
-const Upp::String& GameEngine::LoadAMap(const Upp::String& filepath) noexcept(false){
+const TiledMapJson& GameEngine::LoadAMap(const Upp::String& mapName) noexcept(false){
 	try{
-		LLOG("[GameEngine::LoadAMap] Attempting to load a map \""+ filepath +"\" ");
-		TiledMapJson map(filepath);
+		LLOG("[GameEngine::LoadAMap] Attempting to load a map \""+ mapName +"\" ");
+		TiledMapJson map(GLOBAL_FILEPATH + mapName + ".json");
 		TiledMapJson& instertedMap = d_maps.Add(pick(map));
 		d_timeout.d_mapsTimeout.Add(GetSysTime().Get());
 		LLOG("[GameEngine::LoadAMap] Map have been loaded with success, timeout entry have been created");
-		return instertedMap.GetData();
+		return instertedMap;
 	}catch(Exc& exception){
-		LLOG("[GameEngine::LoadAMap] Exception during load of map file \""+ filepath +"\" ("+ exception +")");
+		LLOG("[GameEngine::LoadAMap] Exception during load of map file \""+ mapName +"\" ("+ exception +")");
 		throw exception;
 	}
 }

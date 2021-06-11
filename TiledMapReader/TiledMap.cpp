@@ -11,6 +11,7 @@ TiledMapJson::TiledMapJson(const Upp::String& file) noexcept(false){
 	ASSERT_(FileExists(file), "JSON File \"" + file + "\" don't exist");
 	try{
 		path = file;
+		name = GetFileTitle(path);
 		data = LoadFile(file);
 		Value json = ParseJSON(data);
 		
@@ -40,7 +41,7 @@ TiledMapJson::TiledMapJson(const Upp::String& file) noexcept(false){
 	}
 }
 
-TiledMapJson::TiledMapJson(TiledMapJson&& map) : data(pick(map.data)), path(pick(map.path)){
+TiledMapJson::TiledMapJson(TiledMapJson&& map) : data(pick(map.data)), path(pick(map.path)), name(pick(map.name)){
 	version = map.version;
 	tiledVersion = map.tiledVersion;
 	
@@ -182,6 +183,7 @@ TiledLayer::TiledLayerType TiledLayer::GetType()const{return type;}
 const ValueMap& TiledLayer::GetProperties()const{return properties;}
 TiledMapJson::~TiledMapJson(){}
 const Upp::String& TiledMapJson::GetPath()const{return path;}
+const Upp::String& TiledMapJson::GetName()const{return name;}
 const Upp::String& TiledMapJson::GetData()const{return data;}
 const Upp::String& TiledMapJson::GetVersion()const{return version;}
 const Upp::String& TiledMapJson::GetTiledVersion()const{return tiledVersion;}

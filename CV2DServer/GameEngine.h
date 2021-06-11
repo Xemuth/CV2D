@@ -14,9 +14,9 @@ class GameEngine{
 		void Stop();
 		bool IsReady();
 		
-		const Upp::String& LoadMapData(const Upp::String& filePath) noexcept(false); //The loaded will remain #mapLoadedTimeout time loaded. It is refreshed when someone ask for it. if an instance is created with a map, then this one unload from the loaded map vector
+		const TiledMapJson& LoadMapData(const Upp::String& filePath) noexcept(false); //The loaded will remain #mapLoadedTimeout time loaded. It is refreshed when someone ask for it. if an instance is created with a map, then this one unload from the loaded map vector
 		
-		double AddPlayer(const Upp::String& playerId, const Upp::String& mapFilePath) noexcept(false); //when a player want to be added to a map that isnt yet instantiate or loaded, then it try to load it and instantiate it before adding the player.
+		double AddPlayer(const Upp::String& playerId, const Upp::String& mapName) noexcept(false); //when a player want to be added to a map that isnt yet instantiate or loaded, then it try to load it and instantiate it before adding the player.
 		bool UpdatePlayer(const Upp::String& playerId, bool keyPressed, byte facing); //if a player remain away from keyboard (no key pressed during more than #playerTimeout) then it remove player from the instance
 		bool RemovePlayer(const Upp::String& playerId); //if player disconnect then it is possible to call this routin
 		
@@ -33,7 +33,7 @@ class GameEngine{
 		void RemovePlayerAdvance(const Upp::String& id);
 		void RemoveInstanceAdvance(double id);
 		
-		const Upp::String& LoadAMap(const Upp::String& filepath) noexcept(false);
+		const TiledMapJson& LoadAMap(const Upp::String& filepath) noexcept(false);
 		
 		int d_tickRate;
 		struct Timeout{

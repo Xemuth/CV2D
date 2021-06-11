@@ -96,11 +96,11 @@ void Server::Connection(TcpSocket& socket, int position){
 		Upp::String data = d_activeConnection.GetLine();
 		if(!socket.IsTimeout() && data.GetCount() > 0){
 			Upp::String sendingCmd = "";
-			LLOG("[Server][Connection " + AsString(position) + "] Receiving from web server: " + data);
+			LLOG("[Server][Connection " + AsString(position) + "] Receiving from web server: " + data.Left(50));
 			sendingCmd = d_callbackClient(socket, data);
 			if(sendingCmd.GetCount() > 0){
-				LLOG("[Server][Connection " + AsString(position) + "] Sending to web server: " + sendingCmd);
-				socket.Put(sendingCmd);
+				LLOG("[Server][Connection " + AsString(position) + "] Sending to web server: " + sendingCmd.Left(50));
+				socket.Put(sendingCmd + "\n");
 			}
 		}else{
 			socket.ClearError();
@@ -113,10 +113,10 @@ void Server::Connection(TcpSocket& socket, int position){
 
 void Server::Listener(){
 	bool listening = false;
-	LLOG("[Server][Listener] Waiting for webServer...");
 	d_ready = true;
 	while(!d_stopThread){
 		if(!listening && !d_stopThread) {
+			LLOG("[Server][Listener] Launching listener");
 			if(!d_socket.Listen(d_port, 1)){
 				LLOG("Unable to initialize server socket on port " + AsString(d_port));
 				return;
@@ -136,11 +136,11 @@ void Server::Listener(){
 				Upp::String data = d_activeConnection.GetLine();
 				if(!d_activeConnection.IsTimeout() && data.GetCount() > 0){
 					Upp::String sendingCmd = "";
-					LLOG("[Server][Listener] Receiving  from web server: " + data);
+					LLOG("[Server][Listener] Receiving  from web server: " + data.Left(50));
 					sendingCmd = d_callbackServer(d_socket, data);
 					if(sendingCmd.GetCount() > 0){
-						LLOG("[Server][Listener] Sending to web server: " + sendingCmd);
-						d_activeConnection.Put(sendingCmd);
+						LLOG("[Server][Listener] Sending to web server: " + sendingCmd.Left(50));
+						d_activeConnection.Put(sendingCmd + "\n");
 					}
 				}else{
 					d_activeConnection.ClearError();

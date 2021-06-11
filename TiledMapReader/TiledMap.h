@@ -65,6 +65,7 @@ class TiledMapJson{
 		enum class TiledRenderOrder{RightDown, RightUp, LeftDown, LeftUp};
 		
 		const Upp::String& GetPath()const;
+		const Upp::String& GetName()const;
 		const Upp::String& GetData()const;
 		const Upp::String& GetVersion()const;
 		const Upp::String& GetTiledVersion()const;
@@ -88,6 +89,7 @@ class TiledMapJson{
 		void ReadTilesSets(const Value& jsonTilesSets);
 		
 		Upp::String path;
+		Upp::String name;
 		Upp::String data;
 		Upp::String version;
 		Upp::String tiledVersion;
