@@ -104,7 +104,7 @@ double GameEngine::AddPlayer(const Upp::String& playerId, const Upp::String& map
 const TiledMapJson& GameEngine::LoadAMap(const Upp::String& mapName) noexcept(false){
 	try{
 		LLOG("[GameEngine::LoadAMap] Attempting to load a map \""+ mapName +"\" ");
-		TiledMapJson map(GLOBAL_FILEPATH + mapName + ".json");
+		TiledMapJson map(GLOBAL_FILEPATH + mapName + ((mapName.Find(".json") != -1)? "":".json"));
 		TiledMapJson& instertedMap = d_maps.Add(pick(map));
 		d_timeout.d_mapsTimeout.Add(GetSysTime().Get());
 		LLOG("[GameEngine::LoadAMap] Map have been loaded with success, timeout entry have been created");
