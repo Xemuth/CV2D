@@ -6,8 +6,12 @@ namespace Upp{
 	
 class Server{
 	public:
-		Server(const Upp::String& webServeurIp, int listeningPort);
+		Server(unsigned int listeningPort);
 		~Server();
+		
+		bool AddAuthorizedIp(const Upp::String& ip);
+		bool RemoveAuthorizedIp(const Upp::String& ip);
+		void ChangePort(unsigned int port);
 		
 		void SetCallbackClient(const Function<Upp::String (const TcpSocket& socket, const Upp::String&)>& callback);
 		void SetCallbackServer(const Function<Upp::String (const TcpSocket& socket, const Upp::String&)>& callback);
@@ -16,6 +20,8 @@ class Server{
 		
 		bool HaveCallbackClient()const;
 		bool HaveCallbackServer()const;
+		
+		unsigned int GetPort()const;
 		
 		void Start();
 		void Stop();
@@ -40,8 +46,8 @@ class Server{
 		TcpSocket d_socket;
 		TcpSocket d_activeConnection;
 		
-		Upp::String d_webServeurIp;
-		int d_port;
+		Vector<Upp::String> d_webServeurIps;
+		unsigned int d_port;
 };
 
 }

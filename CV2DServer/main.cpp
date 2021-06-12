@@ -24,7 +24,7 @@ CONSOLE_APP_MAIN
 {
 	StdLogSetup(LOG_COUT | LOG_FILE | LOG_TIMESTAMP);
 	try{
-		RemoteInterface remote("127.0.0.1", 9555, 300, 300, 300, 60);
+		RemoteInterface remote(9555, 300, 300, 300, 60);
 		remote.Start();
 		Upp::String command;
 		LOG("CV2D >> Command line interface ready");

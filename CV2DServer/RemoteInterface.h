@@ -9,13 +9,13 @@ namespace Upp{
 	
 class RemoteInterface{
 	public:
-		RemoteInterface(const Upp::String& webServeurIp, int listeningPort, int instanceTimeout, int mapLoadedTimeout, int playerTimeout, int tickRate);
+		RemoteInterface(unsigned int listeningPort, int instanceTimeout, int mapLoadedTimeout, int playerTimeout, int tickRate);
 		~RemoteInterface();
 		
 		void Start();
 		void Stop();
 		
-		Upp::String HandleCommandLine(const Upp::String& str);
+		Upp::String HandleCommandLine(Upp::String& str);
 		
 		bool IsStarted()const{return d_started;}
 		
@@ -24,11 +24,15 @@ class RemoteInterface{
 	private:
 		Upp::String GetMap(const Upp::String& cmd,const ValueMap& args);
 		
+		Upp::String AddAuthorizedIp(const Upp::String& str);
+		Upp::String RemoveAuthorizedIp(const Upp::String& str);
+		void ReloadServer();
 		
 		enum Target: byte{COMMAND_LINE = 0x1, WEB_SERVER = 0x2, CLIENT = 0x4};
 		Upp::String CommandClient(const TcpSocket& socket, const Upp::String& str);
 		Upp::String CommandServer(const TcpSocket& socket, const Upp::String& str);
 		
+		Upp::String ShowHelp(const Upp::String& cmd, const VectorMap<Upp::String, Upp::String>& args, const Vector<Upp::String>& examples = {});
 		Upp::String DispatchCommand(Target target , const TcpSocket& socket, const Upp::String& cmd,const ValueMap& args);
 		Upp::String BuildResponse(const Upp::String& cmd, const ValueMap& args)const;
 		

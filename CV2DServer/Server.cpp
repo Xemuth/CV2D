@@ -4,7 +4,7 @@
 
 namespace Upp{
 	
-Server::Server(const Upp::String& webServeurIp, int listeningPort) : d_webServeurIp(webServeurIp), d_port(listeningPort), d_ready(false){}
+Server::Server(unsigned int listeningPort) : d_port(listeningPort), d_ready(false){}
 
 Server::~Server(){
 	Stop();
@@ -31,6 +31,10 @@ void Server::RemoveCallbackClient(){
 
 void Server::RemoveCallbackServer(){
 	d_callbackClient = Nuller();
+}
+
+unsigned int Server::GetPort()const{
+	return d_port;
 }
 
 void Server::Start(){
@@ -73,6 +77,28 @@ void Server::Stop(){
 		showLog = true;
 	}
 	if(showLog) LLOG("[Server][Stop] have been stopped succesfully");
+}
+
+bool Server::AddAuthorizedIp(const Upp::String& ip){
+	for(const Upp::String& ip : d_webServeurIps){
+		if(ip.IsEqual(ip)) return false;
+	}
+	d_webServeurIps.Add(ip);
+	return true;
+}
+
+bool Server::RemoveAuthorizedIp(const Upp::String& ip){
+	for(int i = 0; i < d_webServeurIps.GetCount(); i++){
+		if(d_webServeurIps[i].IsEqual(ip)){
+			d_webServeurIps.Remove(i);
+			return true;
+		}
+	}
+	return true;
+}
+
+void Server::ChangePort(unsigned int port){
+	d_port = port;
 }
 
 const TcpSocket& Server::ConnectNewClient(const Upp::String& addr, int port){
@@ -119,12 +145,20 @@ void Server::Listener(){
 			LLOG("[Server][Listener] Launching listener");
 			if(!d_socket.Listen(d_port, 1)){
 				LLOG("Unable to initialize server socket on port " + AsString(d_port));
+				d_ready = false;
 				return;
 			}
 			listening = true;
 		}
 		if(!d_stopThread && d_activeConnection.Accept(d_socket)){
-			if(!d_activeConnection.GetPeerAddr().IsEqual(d_webServeurIp)){
+			bool found = false;
+			for(const Upp::String& str : d_webServeurIps){
+				if(!d_activeConnection.GetPeerAddr().IsEqual(str)){
+					found = true;
+					break;
+				}
+			}
+			if(!found){
 				LLOG("[Server][Listener] Invalid connection with unknow client have been blocked : " + d_activeConnection.GetPeerAddr());
 				d_activeConnection.Close();
 				continue;

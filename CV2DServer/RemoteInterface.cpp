@@ -4,8 +4,8 @@
 
 namespace Upp{
 
-RemoteInterface::RemoteInterface(const Upp::String& webServeurIp, int listeningPort, int instanceTimeout, int mapLoadedTimeout, int playerTimeout, int tickRate) :
-	d_gameEngine(instanceTimeout, mapLoadedTimeout, playerTimeout, tickRate), d_server(webServeurIp, listeningPort) {
+RemoteInterface::RemoteInterface(unsigned int listeningPort, int instanceTimeout, int mapLoadedTimeout, int playerTimeout, int tickRate) :
+	d_gameEngine(instanceTimeout, mapLoadedTimeout, playerTimeout, tickRate), d_server(listeningPort) {
 		//d_server.SetCallbackClient(THISBACK(CommandClient));
 		d_server.SetCallbackClient([&](const TcpSocket& socket, const Upp::String& str) -> Upp::String{ return CommandServer(socket, str); });
 		//d_server.SetCallbackServer(THISBACK(CommandServer));
@@ -48,9 +48,44 @@ void RemoteInterface::Stop(){
 	d_thread.Wait();
 }
 
-Upp::String RemoteInterface::HandleCommandLine(const Upp::String& str){
+Upp::String RemoteInterface::HandleCommandLine(Upp::String& str){
+	while(str.Find("  ") != -1){ str = Replace(str, {"  "}, {" "});	}
+	str = TrimBoth(str);
 	LLOG("[RemoteInterface][HandleCommandLine] Cmd: " + str);
-	return DispatchCommand(Target::COMMAND_LINE, TcpSocket(), TrimBoth(ToLower(str)),ValueMap{Value{"TODO"}});
+	Upp::String cmd;
+	ValueMap args;
+	if(str.Find(" ") != -1){
+		cmd = str.Left(str.Find(" "));
+		int iterator = str.Find("-");
+		while(iterator != -1){
+			int nextSpace = str.Find(" ", iterator +1);
+			if(nextSpace != -1){
+				int lastSpace = str.Find(" ", nextSpace +1);
+				if(lastSpace != -1){
+					Upp::String val = str.Mid(nextSpace +1, lastSpace - nextSpace);
+					Value converted = abs(StrInt(val));
+					if(IsNull(converted))
+						converted = val;
+			
+					args.Add(str.Mid(iterator + 1, nextSpace - (iterator + 1)), converted);
+					iterator = str.Find("-", lastSpace);
+				}else{
+					Upp::String val = str.Mid(nextSpace +1, str.GetCount() - nextSpace);
+					Value converted = abs(StrInt(val));
+					if(IsNull(converted))
+						converted = val;
+					
+					args.Add(str.Mid(iterator + 1, nextSpace - (iterator + 1)), converted);
+					iterator = -1;
+				}
+			}else{
+				iterator = str.Find("-", iterator +1);
+			}
+		}
+	}else{
+		cmd = str;
+	}
+	return DispatchCommand(Target::COMMAND_LINE, TcpSocket(), TrimBoth(ToLower(cmd)), args);
 }
 
 Upp::String RemoteInterface::CommandClient(const TcpSocket& socket, const Upp::String& str){
@@ -76,6 +111,21 @@ Upp::String RemoteInterface::BuildResponse(const Upp::String& cmd, const ValueMa
 	return json.ToString();
 }
 
+Upp::String RemoteInterface::ShowHelp(const Upp::String& cmd, const VectorMap<Upp::String, Upp::String>& args, const Vector<Upp::String>& examples){
+	Upp::String data;
+	data << "Cmd: " << cmd << "\n";
+	for(int i = 0; i < args.GetCount(); i++){
+		data << "\t" << AsString(i) << ": -" << args.GetKey(i) << " [" << args.Get(args.GetKey(i)) << "]\n";
+	}
+	if(examples.GetCount() > 0){
+		data << "Example(s):\n";
+		for(int i = 0; i < examples.GetCount(); i++){
+			data << "\t" << examples[i] <<"\n";
+		}
+	}
+	return data;
+}
+
 Upp::String RemoteInterface::DispatchCommand(Target target , const TcpSocket& socket, const Upp::String& cmd,const ValueMap& args){
 	if((target & Target::WEB_SERVER) && cmd.IsEqual("getmap")){
 		try{
@@ -86,8 +136,27 @@ Upp::String RemoteInterface::DispatchCommand(Target target , const TcpSocket& so
 	}else if((target & Target::COMMAND_LINE) && cmd.IsEqual("stop")){
 		Stop();
 		return "System have been stopped";
-	}
-	else{
+	}else if((target & Target::COMMAND_LINE) && cmd.IsEqual("reload")){
+		if(d_server.IsReady()){
+			d_server.Stop(); d_server.Start();
+			return "Serveur have been reloaded";
+		}
+		return "Nothing to reload";
+	}else if((target & Target::COMMAND_LINE) && cmd.IsEqual("add_addr")){
+
+		return "System have been stopped";
+	}else if((target & Target::COMMAND_LINE) && cmd.IsEqual("rm_addr")){
+
+		return "System have been stopped";
+	}else if((target & Target::COMMAND_LINE) && cmd.IsEqual("port")){
+		if(args.Find("p") != -1 && args["p"].GetType() > DOUBLE_V) return ShowHelp("port", {{"p", "Integer"}},  {{"port -p 2939"}, {"port"}});
+		if(args.Find("p") != -1 == 0) return "Port: " + AsString(d_server.GetPort());
+		else d_server.ChangePort(int(args["p"]));
+		return "Port have been changed, reload the server to apply";
+	}else if((target & Target::COMMAND_LINE) && cmd.IsEqual("addr")){
+
+		return "System have been stopped";
+	}else{
 		return "Invalid command";
 	}
 }
@@ -111,6 +180,18 @@ Upp::String RemoteInterface::GetMap(const Upp::String& cmd,const ValueMap& args)
 	}catch(Exc& exception){
 		return exception;
 	}
+}
+
+Upp::String RemoteInterface::AddAuthorizedIp(const Upp::String& str){
+	
+}
+
+Upp::String RemoteInterface::RemoveAuthorizedIp(const Upp::String& str){
+	
+}
+
+void RemoteInterface::ReloadServer(){
+		
 }
 
 }
