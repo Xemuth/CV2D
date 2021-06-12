@@ -23,11 +23,7 @@ class RemoteInterface{
 		
 	private:
 		Upp::String GetMap(const Upp::String& cmd,const ValueMap& args);
-		
-		Upp::String AddAuthorizedIp(const Upp::String& str);
-		Upp::String RemoveAuthorizedIp(const Upp::String& str);
-		void ReloadServer();
-		
+			
 		enum Target: byte{COMMAND_LINE = 0x1, WEB_SERVER = 0x2, CLIENT = 0x4};
 		Upp::String CommandClient(const TcpSocket& socket, const Upp::String& str);
 		Upp::String CommandServer(const TcpSocket& socket, const Upp::String& str);
@@ -35,6 +31,12 @@ class RemoteInterface{
 		Upp::String ShowHelp(const Upp::String& cmd, const VectorMap<Upp::String, Upp::String>& args, const Vector<Upp::String>& examples = {});
 		Upp::String DispatchCommand(Target target , const TcpSocket& socket, const Upp::String& cmd,const ValueMap& args);
 		Upp::String BuildResponse(const Upp::String& cmd, const ValueMap& args)const;
+		
+		
+		double AddPlayer(const Upp::String& playerId, const Upp::String& mapName) noexcept(false); //when a player want to be added to a map that isnt yet instantiate or loaded, then it try to load it and instantiate it before adding the player.
+		bool UpdatePlayer(const Upp::String& playerId, bool keyPressed, byte facing); //if a player remain away from keyboard (no key pressed during more than #playerTimeout) then it remove player from the instance
+		bool RemovePlayer(const Upp::String& playerId); //if player disconnect then it is possible to call this routin
+		InstanceState GetInstanceState(double instanceId);
 		
 		void WaitIsReady();
 

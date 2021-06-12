@@ -27,7 +27,7 @@
 **Example**
 
 ```json
-{"command":"getmap","args":[{"path":"testMap"}]}
+{"command":"getmap","args":[{"name":"testMap"}]}
 ```
 
 **Result**

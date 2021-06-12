@@ -22,6 +22,7 @@ class Server{
 		bool HaveCallbackServer()const;
 		
 		unsigned int GetPort()const;
+		const Vector<Upp::String>& GetAuthorizedIps()const;
 		
 		void Start();
 		void Stop();

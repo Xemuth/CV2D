@@ -27,16 +27,16 @@ void GameEngine::Stop(){
 	d_threadJanitor.Wait();
 }
 
-const TiledMapJson& GameEngine::LoadMapData(const Upp::String& filePath) noexcept(false){
-	LLOG("[GameEngine::LoadMapData] Loading map data \"" +  filePath + "\"");
+const TiledMapJson& GameEngine::LoadMapData(const Upp::String& mapName) noexcept(false){
+	LLOG("[GameEngine::LoadMapData] Loading map data \"" +  mapName + "\"");
 	for(Instance& instance : d_instances){
-		if(instance.GetMap().GetPath().IsEqual(filePath)){
+		if(instance.GetMap().GetName().IsEqual(mapName)){
 			LLOG("[GameEngine::LoadMapData] map found in instance id \"" +  AsString(instance.GetId()) + "\"");
 			return instance.GetMap();
 		}
 	}
 	for(int e = 0; e < d_maps.GetCount(); e++){
-		if(d_maps[e].GetPath().IsEqual(filePath)){
+		if(d_maps[e].GetName().IsEqual(mapName)){
 			d_timeout.d_mapsTimeout[e] = GetSysTime().Get(); //We refresh timer
 			LLOG("[GameEngine::LoadMapData] map is already loaded, returning data");
 			return d_maps[e];
@@ -46,7 +46,7 @@ const TiledMapJson& GameEngine::LoadMapData(const Upp::String& filePath) noexcep
 	//incorrect then it throw exception
 	try{
 		LLOG("[GameEngine::LoadMapData] map is not already load or used in an instance. Loading in progress...");
-		return LoadAMap(filePath);
+		return LoadAMap(mapName);
 	}catch(Exc& exception){
 		LLOG("[GameEngine::LoadMapData] LoadAMap function have throw an exception. This filepath is invalid");
 		throw exception;

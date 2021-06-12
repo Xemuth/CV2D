@@ -80,8 +80,8 @@ void Server::Stop(){
 }
 
 bool Server::AddAuthorizedIp(const Upp::String& ip){
-	for(const Upp::String& ip : d_webServeurIps){
-		if(ip.IsEqual(ip)) return false;
+	for(const Upp::String& str : d_webServeurIps){
+		if(str.IsEqual(ip)) return false;
 	}
 	d_webServeurIps.Add(ip);
 	return true;
@@ -101,9 +101,14 @@ void Server::ChangePort(unsigned int port){
 	d_port = port;
 }
 
+const Vector<Upp::String>& Server::GetAuthorizedIps()const{
+	return d_webServeurIps;
+}
+
 const TcpSocket& Server::ConnectNewClient(const Upp::String& addr, int port){
 	int position = d_sockets.GetCount();
 	TcpSocket& client = d_sockets.Create();
+	client.GlobalTimeout(1000);
 	LLOG("[Server][ConnectNewClient] Connection requestion on " + addr +":"+ AsString(port));
 	if(client.Connect(addr, port)){
 		d_clients.Create().Run([&]{Connection(client, position);});
@@ -118,18 +123,27 @@ const TcpSocket& Server::ConnectNewClient(const Upp::String& addr, int port){
 
 void Server::Connection(TcpSocket& socket, int position){
 	LLOG("[Server][Connection " + AsString(position) + "] Connection is started ");
-	while(!socket.IsError() && !socket.IsEof()){
-		Upp::String data = d_activeConnection.GetLine();
-		if(!socket.IsTimeout() && data.GetCount() > 0){
-			Upp::String sendingCmd = "";
-			LLOG("[Server][Connection " + AsString(position) + "] Receiving from web server: " + data.Left(50));
-			sendingCmd = d_callbackClient(socket, data);
-			if(sendingCmd.GetCount() > 0){
-				LLOG("[Server][Connection " + AsString(position) + "] Sending to web server: " + sendingCmd.Left(50));
-				socket.Put(sendingCmd + "\n");
+	
+	while(!d_stopThread && !socket.IsError() && socket.IsOpen()){
+		if(socket.Peek() != -1){
+			Upp::String data;
+			while(socket.Peek()!= -1){
+				data << char(socket.Get());
+			}
+			if(socket.IsTimeout())
+				socket.ClearError();
+			
+			if(data != String::GetVoid()){
+				Upp::String sendingCmd = "";
+				LLOG("[Server][Listener] Receiving  from web server: " + data.Left(20));
+				sendingCmd = d_callbackServer(d_socket, data);
+				if(sendingCmd.GetCount() > 0){
+					LLOG("[Server][Listener] Sending to web server: " + sendingCmd.Left(20));
+					socket.Put(sendingCmd + "\n\0");
+				}
 			}
 		}else{
-			socket.ClearError();
+			Sleep(100);
 		}
 	}
 	socket.Close();
@@ -153,7 +167,7 @@ void Server::Listener(){
 		if(!d_stopThread && d_activeConnection.Accept(d_socket)){
 			bool found = false;
 			for(const Upp::String& str : d_webServeurIps){
-				if(!d_activeConnection.GetPeerAddr().IsEqual(str)){
+				if(d_activeConnection.GetPeerAddr().IsEqual(str)){
 					found = true;
 					break;
 				}
@@ -166,22 +180,52 @@ void Server::Listener(){
 			LLOG("[Server][Listener] WebServer connected, closing listener");
 			d_socket.Close();
 			listening = false;
-			while(!d_activeConnection.IsError() && !d_activeConnection.IsEof()){
-				Upp::String data = d_activeConnection.GetLine();
-				if(!d_activeConnection.IsTimeout() && data.GetCount() > 0){
-					Upp::String sendingCmd = "";
-					LLOG("[Server][Listener] Receiving  from web server: " + data.Left(50));
-					sendingCmd = d_callbackServer(d_socket, data);
-					if(sendingCmd.GetCount() > 0){
-						LLOG("[Server][Listener] Sending to web server: " + sendingCmd.Left(50));
-						d_activeConnection.Put(sendingCmd + "\n");
+			timeval *tvalp = NULL;
+			timeval tval;
+			tval.tv_sec = 5;
+			tval.tv_usec = 5000;
+			tvalp = &tval;
+			
+			fd_set fdsetr[1];
+			FD_ZERO(fdsetr);
+			FD_SET(d_activeConnection.GetSOCKET(), fdsetr);
+			
+		//d_activeConnection.Timeout(5000);
+		//	d_activeConnection.GlobalTimeout(5000);
+			while(!d_stopThread && !d_activeConnection.IsError() && d_activeConnection.IsOpen()){
+				LLOG("[Server][Listener] SOCKET: " + AsString(d_activeConnection.GetSOCKET()));
+				FD_ZERO(fdsetr);
+				FD_SET(d_activeConnection.GetSOCKET(), fdsetr);
+				int value = select(0, fdsetr, nullptr, nullptr, tvalp);
+				if(value > 0){
+					Upp::String data;
+					char d;
+					recv(d_activeConnection.GetSOCKET(), &d, 1, 0);
+					data << d;
+					
+					while(select(0, fdsetr, nullptr, nullptr, tvalp) > 0){
+						recv(d_activeConnection.GetSOCKET(), &d, 1, 0);
+						data << d;
 					}
+					
+					if(data.GetCount() > 0){
+						Upp::String sendingCmd = "";
+						LLOG("[Server][Listener] Receiving  from web server: " + data.Left(20));
+						sendingCmd = d_callbackServer(d_activeConnection, data);
+						if(sendingCmd.GetCount() > 0){
+							LLOG("[Server][Listener] Sending to web server: " + sendingCmd.Left(20));
+							d_activeConnection.Put(sendingCmd + "\n\0");
+							d_activeConnection.WaitWrite();
+						}
+					}
+				}else if(value == 0){
+					if(select(0, nullptr, nullptr, fdsetr, tvalp) == SOCKET_ERROR) break;
 				}else{
-					d_activeConnection.ClearError();
+					LOG("ERROR : " + AsString(WSAGetLastError()));
+					break;
 				}
 			}
-			LLOG("[Server][Listener] WebServer error: " + d_socket.GetErrorDesc());
-			d_activeConnection.Close();
+			if(d_activeConnection.IsError()) LLOG("[Server][Listener] WebServer error: " + d_activeConnection.GetErrorDesc());
 			d_activeConnection.Clear();
 			LLOG("[Server][Listener] WebServer disconnected");
 		}

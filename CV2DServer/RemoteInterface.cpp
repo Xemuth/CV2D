@@ -63,19 +63,19 @@ Upp::String RemoteInterface::HandleCommandLine(Upp::String& str){
 				int lastSpace = str.Find(" ", nextSpace +1);
 				if(lastSpace != -1){
 					Upp::String val = str.Mid(nextSpace +1, lastSpace - nextSpace);
-					Value converted = abs(StrInt(val));
+					/*Value converted = abs(StrInt(val));
 					if(IsNull(converted))
-						converted = val;
+						converted = val;*/
 			
-					args.Add(str.Mid(iterator + 1, nextSpace - (iterator + 1)), converted);
+					args.Add(str.Mid(iterator + 1, nextSpace - (iterator + 1)), val);
 					iterator = str.Find("-", lastSpace);
 				}else{
 					Upp::String val = str.Mid(nextSpace +1, str.GetCount() - nextSpace);
-					Value converted = abs(StrInt(val));
+					/*Value converted = abs(StrInt(val));
 					if(IsNull(converted))
-						converted = val;
+						converted = val;*/
 					
-					args.Add(str.Mid(iterator + 1, nextSpace - (iterator + 1)), converted);
+					args.Add(str.Mid(iterator + 1, nextSpace - (iterator + 1)), val);
 					iterator = -1;
 				}
 			}else{
@@ -106,7 +106,12 @@ Upp::String RemoteInterface::BuildResponse(const Upp::String& cmd, const ValueMa
 	Json json;
 	json("command", cmd);
 	JsonArray array;
-	array << AsJSON(Value(args));
+	for(const Value& v : args.GetKeys()){
+		if(args[v].GetType() > 2)
+			array << Json(v.ToString(), args[v].ToString());
+		else if(args[v].GetType() <= 2)
+			array << Json(v.ToString(), int(args[v]));
+	}
 	json("args", array);
 	return json.ToString();
 }
@@ -143,19 +148,30 @@ Upp::String RemoteInterface::DispatchCommand(Target target , const TcpSocket& so
 		}
 		return "Nothing to reload";
 	}else if((target & Target::COMMAND_LINE) && cmd.IsEqual("add_addr")){
-
-		return "System have been stopped";
+		if(args.Find("addr") == -1 || args["addr"].GetType() != STRING_V) return ShowHelp("add_addr", {{"addr", "String"}},  {{"add_addr -addr 127.0.0.2"}});
+		if(d_server.AddAuthorizedIp(args["addr"].ToString())) return "Authorized ip have been added";
+		return "This ip already exist in the  list of authorized ip";
 	}else if((target & Target::COMMAND_LINE) && cmd.IsEqual("rm_addr")){
-
-		return "System have been stopped";
+		if(args.Find("addr") == -1 || args["addr"].GetType() != STRING_V) return ShowHelp("rm_addr", {{"addr", "String"}},  {{"rm_addr -addr 127.0.0.2"}});
+		if(d_server.RemoveAuthorizedIp(args["addr"].ToString())) return "Authorized ip have been deleted";
+		return "This ip don't exist in the list of authorized ip";
 	}else if((target & Target::COMMAND_LINE) && cmd.IsEqual("port")){
-		if(args.Find("p") != -1 && args["p"].GetType() > DOUBLE_V) return ShowHelp("port", {{"p", "Integer"}},  {{"port -p 2939"}, {"port"}});
-		if(args.Find("p") != -1 == 0) return "Port: " + AsString(d_server.GetPort());
-		else d_server.ChangePort(int(args["p"]));
+		if(args.Find("p") != -1 && IsNull(StrInt(args["p"].ToString()))) return ShowHelp("port", {{"p", "Integer"}},  {{"port -p 2939"}, {"port"}});
+		if(args.Find("p") == -1) return "Port: " + AsString(d_server.GetPort());
+		else d_server.ChangePort(abs(int(StrInt(args["p"].ToString()))));
 		return "Port have been changed, reload the server to apply";
 	}else if((target & Target::COMMAND_LINE) && cmd.IsEqual("addr")){
-
-		return "System have been stopped";
+		Upp::String data;
+		if(d_server.GetAuthorizedIps().GetCount()){
+			data << "Authorized IP:";
+			for(const Upp::String& str : d_server.GetAuthorizedIps()){
+				data << "\n\t" << str;
+			}
+			data << "\n";
+		}else{
+			data << "No authorized IP registered";
+		}
+		return data;
 	}else{
 		return "Invalid command";
 	}
@@ -165,14 +181,14 @@ Upp::String RemoteInterface::GetMap(const Upp::String& cmd,const ValueMap& args)
 	bool found = false;
 	int iterator;
 	for(iterator = 0; iterator < args.GetCount(); iterator++){
-		if(!IsNull(args[iterator]["path"])){
+		if(!IsNull(args[iterator]["name"])){
 			found = true;
 			break;
 		}
 	}
 	if(!found) throw Exc("no path have been provided");
 	try{
-		const TiledMapJson& tiledMap = d_gameEngine.LoadMapData(args[iterator]["path"].ToString());
+		const TiledMapJson& tiledMap = d_gameEngine.LoadMapData(args[iterator]["name"].ToString());
 		return BuildResponse("getmap", ValueMap{
 			{"data", Base64Encode(tiledMap.GetData())},
 		//	{"image", Base64Encode(LoadFile( GetFileFolder(tiledMap.GetPath()) + "\\" + Replace(tiledMap.GetTilesSets()[0].GetSource(),{"tsx"},{"png"})))}
@@ -180,18 +196,6 @@ Upp::String RemoteInterface::GetMap(const Upp::String& cmd,const ValueMap& args)
 	}catch(Exc& exception){
 		return exception;
 	}
-}
-
-Upp::String RemoteInterface::AddAuthorizedIp(const Upp::String& str){
-	
-}
-
-Upp::String RemoteInterface::RemoveAuthorizedIp(const Upp::String& str){
-	
-}
-
-void RemoteInterface::ReloadServer(){
-		
 }
 
 }

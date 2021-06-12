@@ -1,6 +1,9 @@
 #include <Core/Core.h>
+#include <csignal>
 #include "RemoteInterface.h"
 using namespace Upp;
+
+RemoteInterface* ptr;
 
 String ReadCmd(int timeout)
 {
@@ -24,7 +27,9 @@ CONSOLE_APP_MAIN
 {
 	StdLogSetup(LOG_COUT | LOG_FILE | LOG_TIMESTAMP);
 	try{
-		RemoteInterface remote(9555, 300, 300, 300, 60);
+		RemoteInterface remote(64030, 300, 300, 300, 60);
+		ptr = &remote;
+		std::signal(SIGINT,static_cast<__p_sig_fn_t>([](int s)->void{ptr->Stop();}));
 		remote.Start();
 		Upp::String command;
 		LOG("CV2D >> Command line interface ready");
