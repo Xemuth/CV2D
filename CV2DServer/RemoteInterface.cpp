@@ -4,8 +4,8 @@
 
 namespace Upp{
 
-RemoteInterface::RemoteInterface(unsigned int listeningPort, int instanceTimeout, int mapLoadedTimeout, int playerTimeout, int tickRate) :
-	d_gameEngine(instanceTimeout, mapLoadedTimeout, playerTimeout, tickRate), d_server(listeningPort) {
+RemoteInterface::RemoteInterface(const Upp::Vector<Upp::String>& authorizedIp, unsigned int listeningPort, int instanceTimeout, int mapLoadedTimeout, int playerTimeout, int tickRate) :
+	d_gameEngine(instanceTimeout, mapLoadedTimeout, playerTimeout, tickRate), d_server(authorizedIp, listeningPort) {
 		//d_server.SetCallbackClient(THISBACK(CommandClient));
 		d_server.SetCallbackClient([&](const TcpSocket& socket, const Upp::String& str) -> Upp::String{ return CommandServer(socket, str); });
 		//d_server.SetCallbackServer(THISBACK(CommandServer));

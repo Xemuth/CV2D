@@ -6,7 +6,7 @@ namespace Upp{
 	
 class Server{
 	public:
-		Server(unsigned int listeningPort);
+		Server(const Upp::Vector<Upp::String>& authorizedIp, unsigned int listeningPort);
 		~Server();
 		
 		bool AddAuthorizedIp(const Upp::String& ip);

@@ -27,7 +27,7 @@ CONSOLE_APP_MAIN
 {
 	StdLogSetup(LOG_COUT | LOG_FILE | LOG_TIMESTAMP);
 	try{
-		RemoteInterface remote(64030, 300, 300, 300, 60);
+		RemoteInterface remote({{"127.0.0.1"}},64030, 300, 300, 300, 60);
 		ptr = &remote;
 		std::signal(SIGINT,static_cast<__p_sig_fn_t>([](int s)->void{ptr->Stop();}));
 		remote.Start();

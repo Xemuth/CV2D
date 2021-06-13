@@ -9,7 +9,7 @@ namespace Upp{
 	
 class RemoteInterface{
 	public:
-		RemoteInterface(unsigned int listeningPort, int instanceTimeout, int mapLoadedTimeout, int playerTimeout, int tickRate);
+		RemoteInterface(const Upp::Vector<Upp::String>& authorizedIp, unsigned int listeningPort, int instanceTimeout, int mapLoadedTimeout, int playerTimeout, int tickRate);
 		~RemoteInterface();
 		
 		void Start();
