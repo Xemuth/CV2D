@@ -16,7 +16,7 @@
 
 ## **Commands**
 
-#### Getmap 
+#### Getmap (Server socket)
 
 **Getmap** is the fundamental function of CV2D game server, it attempt to load a map (e.g a CV) then it return it as base64 encoded data. The loaded map is a tiled map formated in JSON.
 
@@ -38,7 +38,7 @@
 
 ------
 
-#### AddPlayer
+#### AddPlayer (Server socket)
 
 **AddPlayer** is used to add player to an existing instance (localized by a map name). An Id for the player to create must be passed as argument thus as the map name where to put the player
 
@@ -67,65 +67,32 @@
 
 The instance id returned by the function is used to authenticate the socket which is connecting to the web server. When a new instance is created, CV2D game server will open a connection to the web server.  This opened connection can be used by web server to send commands to the instance. But first, the webserver must authenticate the socket by sending the command Authenticate (see command below). After authentication have succeeded , the socket can be used to freely send command to the instance, as long as this one is open.
 
+------
+
+#### Authenticate (Client socket)
+
+**Authenticate ** is used to authenticate fresh client socket opened from CV2D. When a new instance is created, CV2D will open a connection to the webserver, This connection is used to exchange command about the current instance (e.g. GetInstanceState). If authenticate is not perform then each command sent by this socket will be discarded by CV2D.
+
+| Argument    |  Type  |                            description |
+| ----------- | :----: | -------------------------------------: |
+| instance_id | double | The id of the instance freshly created |
+
+******
+
+**Example**
+
+```json
+{"command":"authenticate","args":[{"instance_id":654851235487}]}
+```
+
+**Result**
+
+```json
+{"command":"authenticate","args":[{"result":"Socket authenticated"}]}
+```
+
 
 
 ## Architecture
 
 ![CV2D Game Server](https://i.imgur.com/cdPmbbB.png)
-
-
-
-CV2D is dual connection based. The principle is to connect the webServer to the CV2D server and each instance openned by CV2D is a client connecting to the webServer. This client is the only way to retrieve information about the current instance. It authenticate to the web server via a token shared with the webserver
-when the instance is created.
-
-```
-
-   ┌────────────────────────┐                        ┌────────────────────────┐
-   │ CV2D                   │                        │ WebServer              │
-   │               ┌──────┐ │         GetMap         │ ┌──────┐               │
-   │    Main server│Server│◄├────────────────────────┼─┤Client│ Remote client │
-   │               └──┬───┘ │                        │ └──────┘               │
-   │                  │     │                        │                        │
-   │               ┌──▼───┐ │    Authentification    │ ┌───────┐              │
-   │     Instance 1│Client├─┼────────────────────────┤►│Server │              │
-   │               └──────┘ │                        │ └────┬──┘              │
-   │                        │                        │      │                 │
-   │               ┌──────┐ │                        │ ┌────▼─────────────┐   │
-   │     Instance 2│Client│ │                        │ │Socket Instance 1 │   │
-   │               └──────┘ │                        │ └──────────────────┘   │
-   │                        │                        │                        │
-   │                        │                        │                        │
-   └────────────────────────┘                        └────────────────────────┘
-```
-
-
-
-─────────────────────────────────────────────────────────────────────────────────────
-When a socket between CV2D (which is a client) and WebServer, then CV2D will send periodicaly the state
-of the actual instance. If this instance is empty (no player connected) for more than a predifined timeout.
-Then CV2D will close the connection.
-
-    ┌────────────────────────┐                        ┌────────────────────────┐
-    │          CV2D          │                        │        WebServer       │
-    │                        │                        │                        │
-    │             ┌──────┐   │                        │  ┌──────────────────┐  │
-    │   Instance 1│Client│   │                        │  │Socket Instance 1 │  │
-    │             └──────┘   │                        │  └────────┬─────────┘  │
-    │           │            │     SendState          │           │            │
-    │           │ ───────────┼────────────────────────┼────────►  │            │
-    │                        │                        │                        │
-    │           │ │TickRate  │                        │           │            │
-    │           │ ▼          │   ┼                    │           │            │
-    │                        │     SendState          │                        │
-    │           │ ───────────┼────────────────────────┼────────►  │            │
-    │           │            │                        │           │            │
-    │             │TickRate  │                        │                        │
-    │           │ ▼          │                        │           │            │
-    │           │            │     SendState          │           │            │
-    │              ──────────┼────────────────────────┼────────►               │
-    │           │            │                        │           │            │
-    │           │            │                        │           │            │
-    │                        │     Close              │                        │
-    │           │ ───────────┼────────────────────────┼────────►  │            │
-    │           │            │                        │           │            │
-
