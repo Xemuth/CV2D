@@ -29,7 +29,9 @@ CONSOLE_APP_MAIN
 	try{
 		RemoteInterface remote({{"127.0.0.1"},{"37.170.105.247"}},64030, 300, 300, 300, 60);
 		ptr = &remote;
-		std::signal(SIGINT,static_cast<__p_sig_fn_t>([](int s)->void{ptr->Stop();}));
+		#ifdef flagWIN32
+			std::signal(SIGINT,static_cast<__p_sig_fn_t>([](int s)->void{ptr->Stop();}));
+		#endif
 		remote.Start();
 		Upp::String command;
 		LOG("CV2D >> Command line interface ready");

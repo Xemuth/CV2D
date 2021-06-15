@@ -2,7 +2,11 @@
 
 #define LLOG(x)   LOG(x)
 
-static const Upp::String GLOBAL_FILEPATH = "C:\\Upp\\CV2D\\TiledMapReader\\";
+#ifdef flagWIN32
+	static const Upp::String GLOBAL_FILEPATH = "C:\\Upp\\CV2D\\TiledMapReader\\";
+#else
+	static const Upp::String GLOBAL_FILEPATH = "/home/xemuth/Upp/CV2D/TiledMapReader/";
+#endif
 
 namespace Upp{
 
