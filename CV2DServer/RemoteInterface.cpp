@@ -6,10 +6,12 @@ namespace Upp{
 
 RemoteInterface::RemoteInterface(const Upp::Vector<Upp::String>& authorizedIp, unsigned int listeningPort, int instanceTimeout, int mapLoadedTimeout, int playerTimeout, int tickRate) :
 	d_gameEngine(instanceTimeout, mapLoadedTimeout, playerTimeout, tickRate), d_server(authorizedIp, listeningPort) {
-		//d_server.SetCallbackClient(THISBACK(CommandClient));
-		d_server.SetCallbackClient([&](const TcpSocket& socket, const Upp::String& str) -> Upp::String{ return CommandServer(socket, str); });
-		//d_server.SetCallbackServer(THISBACK(CommandServer));
+		d_server.SetCallbackClient([&](const TcpSocket& socket, const Upp::String& str) -> Upp::String{ return CommandClient(socket, str); });
+		d_server.SetCallbackClientClose([&](const TcpSocket& socket)-> void{ return CloseClient(socket);});
 		d_server.SetCallbackServer([&](const TcpSocket& socket, const Upp::String& str) -> Upp::String{ return CommandServer(socket, str); });
+		
+		d_gameEngine.SetCallbackTimeout([&](double instanceId) -> void{ return InstanceTimeout(instanceId);});
+		
 		d_started = false;
 	}
 	
@@ -91,8 +93,47 @@ Upp::String RemoteInterface::HandleCommandLine(Upp::String& str){
 Upp::String RemoteInterface::CommandClient(const TcpSocket& socket, const Upp::String& str){
 	LLOG("[RemoteInterface][CommandClient] Socket 0x" + Format64Hex((uint64)(&socket))  + " Cmd: " + str);
 	Value json = ParseJSON(str);
-	if(!IsNull(json["command"])) return "Invalide command\n";
-	return DispatchCommand(Target::CLIENT, socket, TrimBoth(ToLower(json["command"].ToString())), json["args"]);
+	if(IsNull(json["command"])) return "Invalide command";
+	Upp::String cmd = TrimBoth(ToLower(json["command"].ToString()));
+	if(cmd.IsEqual("authenticate")){
+		if(!IsNull(json["args"])){
+			if(!IsNull(json["args"][0]["instance_id"])){
+				if(Authenticate(socket, double(json["args"][0]["instance_id"]))){
+					return BuildResponse("authenticate", ValueMap{{"result", "Socket authenticated"}});
+				}
+			}
+		}
+		return BuildResponse("authenticate", ValueMap{{"error", "Invalide command"}});
+	}else{
+		for(const TcpSocket* tcp : d_link.GetKeys()){
+			if(tcp == &socket){
+				if(d_link.Get(tcp).Get(1) == false) return BuildResponse(cmd, ValueMap{{"error", "Invalid socket, not authenticated yet"}});
+				break;
+			}
+		}
+		return DispatchCommand(Target::CLIENT, socket, cmd, json["args"]);
+	}
+}
+
+void RemoteInterface::CloseClient(const TcpSocket& socket){
+	for(int i = 0; i < d_link.GetCount(); i++){
+		const TcpSocket* tcp = d_link.GetKey(i);
+		if(tcp == &socket){
+			d_gameEngine.RemoveInstance(d_link.Get(tcp).Get(0));
+			d_link.Remove(i);
+			return;
+		}
+	}
+}
+
+void RemoteInterface::InstanceTimeout(double instanceId){
+	for(int i = 0; i < d_link.GetCount(); i++){
+		const TcpSocket* tcp = d_link.GetKey(i);
+		if(d_link.Get(tcp).Get(0) == instanceId){
+			d_server.CloseSocket(tcp);
+			return;
+		}
+	}
 }
 
 Upp::String RemoteInterface::CommandServer(const TcpSocket& socket, const Upp::String& str){
@@ -116,6 +157,19 @@ Upp::String RemoteInterface::BuildResponse(const Upp::String& cmd, const ValueMa
 	return json.ToString();
 }
 
+bool RemoteInterface::Authenticate(const TcpSocket& socket, double instanceId){
+	for(const TcpSocket* tcp : d_link.GetKeys()){
+		if(tcp == &socket){
+			if(d_link.Get(tcp).Get(0) == instanceId){
+				d_link.Get(tcp).Get(1) = true;
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+
 Upp::String RemoteInterface::ShowHelp(const Upp::String& cmd, const VectorMap<Upp::String, Upp::String>& args, const Vector<Upp::String>& examples){
 	Upp::String data;
 	data << "Cmd: " << cmd << "\n";
@@ -138,7 +192,27 @@ Upp::String RemoteInterface::DispatchCommand(Target target , const TcpSocket& so
 		}catch(Exc& exception){
 			return BuildResponse("getmap", ValueMap{{"error", exception}});
 		}
-	}else if((target & Target::COMMAND_LINE) && cmd.IsEqual("stop")){
+	}else if((target & Target::WEB_SERVER) && cmd.IsEqual("addplayer")){
+		try{
+			return BuildResponse("addplayer", ValueMap{{"instance_id", AddPlayer(cmd, args)}});
+		}catch(Exc& exception){
+			return BuildResponse("addplayer", ValueMap{{"error", exception}});
+		}
+	}else if((target & Target::COMMAND_LINE) && cmd.IsEqual("updateplayer")){
+		try{
+			//return UpdatePlayer(cmd, args, 0x1); //TODO
+			return "";
+		}catch(Exc& exception){
+			return BuildResponse("updateplayer", ValueMap{{"error", exception}});
+		}
+	}else if((target & Target::COMMAND_LINE) && cmd.IsEqual("removeplayer")){
+		try{
+			//return RemovePlayer(cmd, args); //TODO
+			return "";
+		}catch(Exc& exception){
+			return BuildResponse("removeplayer", ValueMap{{"error", exception}});
+		}
+	}else if((target & Target::COMMAND_LINE) && cmd.IsEqual("getinstancestate")){
 		Stop();
 		return "System have been stopped";
 	}else if((target & Target::COMMAND_LINE) && cmd.IsEqual("reload")){
@@ -196,6 +270,46 @@ Upp::String RemoteInterface::GetMap(const Upp::String& cmd,const ValueMap& args)
 	}catch(Exc& exception){
 		return exception;
 	}
+}
+
+Upp::String RemoteInterface::AddPlayer(const Upp::String& cmd, const ValueMap& args) noexcept(false){//when a player want to be added to a map that isnt yet instantiate or loaded, then it try to load it and instantiate it before adding the player.
+	if(args.Find("player_id") && args.Find("name")){
+		try{
+			double instanceId = d_gameEngine.AddPlayer(~args[0]["player_id"],~args[1]["name"]);
+			bool found = false;
+			for(const TcpSocket* tcp : d_link.GetKeys()){
+				if(d_link.Get(tcp).Get(0) == instanceId){
+					if(d_link.Get(tcp).Get(1) == false){
+						d_gameEngine.RemovePlayer(~args["player_id"]);
+						throw Exc("The socket openned for this map have not been authorized yet. sent it is instance ID to be authorized !");
+					}
+					found = true;
+					break;
+				}
+			}
+			if(!found){
+				const TcpSocket& socket = d_server.ConnectNewClient(d_server.GetWebServerSocket().GetPeerAddr(), 64030); //PORT IS NOT DEFINED YET
+				d_link.Add(&socket, Tuple<double, bool>{instanceId, false});
+			}
+			return AsString(instanceId);
+		}catch(Exc& exception){
+			throw exception;
+		}
+	}else{
+		throw Exc("Invalide args, refere to documentation");
+	}
+}
+
+Upp::String RemoteInterface::UpdatePlayer(const Upp::String& playerId, bool keyPressed, byte facing){//if a player remain away from keyboard (no key pressed during more than #playerTimeout) then it remove player from the instance
+	return "";
+}
+
+Upp::String RemoteInterface::RemovePlayer(const Upp::String& playerId){//if player disconnect then it is possible to call this routine
+	return "";
+}
+
+Upp::String RemoteInterface::GetInstanceState(double instanceId){
+	return "";
 }
 
 }

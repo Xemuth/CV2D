@@ -18,6 +18,10 @@ void Server::SetCallbackServer(const Function<Upp::String (const TcpSocket& sock
 	d_callbackServer = callback;
 }
 
+void Server::SetCallbackClientClose(const Function<void (const TcpSocket& socket)>& callback){
+	d_callbackClientClose = callback;
+}
+
 bool Server::HaveCallbackServer()const{
 	return d_callbackClient;
 }
@@ -105,11 +109,26 @@ const Vector<Upp::String>& Server::GetAuthorizedIps()const{
 	return d_webServeurIps;
 }
 
+const TcpSocket& Server::GetWebServerSocket()const{
+	return d_activeConnection;
+}
+
+void Server::CloseSocket(const TcpSocket* socket){
+	for(int i = 0; i < d_sockets.GetCount(); i++){
+		TcpSocket& tcp = d_sockets[i];
+		if(&tcp == socket){
+			tcp.Close();
+			d_clients.Remove(i);
+			d_sockets.Remove(i);
+			return;
+		}
+	}
+}
+
 const TcpSocket& Server::ConnectNewClient(const Upp::String& addr, int port){
 	int position = d_sockets.GetCount();
 	TcpSocket& client = d_sockets.Create();
 	client.Timeout(500);
-	client.Linger(200);
 	LLOG("[Server][ConnectNewClient] Connection requestion on " + addr +":"+ AsString(port));
 	if(client.Connect(addr, port)){
 		d_clients.Create().Run([&]{Connection(client, position);});
@@ -139,10 +158,10 @@ void Server::Connection(TcpSocket& socket, int position){
 									
 				if(data.GetCount() > 0){
 					Upp::String sendingCmd = "";
-					LLOG("[Server][Listener] Receiving  from web server: " + data.Left(20));
+					LLOG("[Server][Connection " + AsString(position) + "] Receiving  from web server: " + data.Left(20));
 					sendingCmd = d_callbackClient(socket, data);
 					if(sendingCmd.GetCount() > 0){
-						LLOG("[Server][Listener] Sending to web server: " + sendingCmd.Left(20));
+						LLOG("[Server][Connection " + AsString(position) + "] Sending to web server: " + sendingCmd.Left(20));
 						socket.Put(sendingCmd);
 					}
 				}
@@ -152,7 +171,9 @@ void Server::Connection(TcpSocket& socket, int position){
 		}
 	}
 	socket.Close();
+	d_callbackClientClose(socket);
 	d_sockets.Remove(position);
+	d_clients.Remove(position);
 	LLOG("[Server][Connection " + AsString(position) + "] Connection closed");
 }
 

@@ -22,7 +22,7 @@
 
 | Argument |  Type  |                   description |
 | -------- | :----: | ----------------------------: |
-| **path** | String | the map name you want to load |
+| path     | String | the map name you want to load |
 
 **Example**
 
@@ -35,6 +35,37 @@
 ```json
 {"command":"getmap","args":[{"data":"eyAiY29tcH...RoIjo1Dp9"}]}
 ```
+
+------
+
+#### AddPlayer
+
+**AddPlayer** is used to add player to an existing instance (localized by a map name). An Id for the player to create must be passed as argument thus as the map name where to put the player
+
+| Argument          |  Type  |                                    description |
+| ----------------- | :----: | ---------------------------------------------: |
+| player_id         | String |                    The Id of the player insert |
+| name              | String |        The map instance where to insert player |
+| ***Return type*** |        |                                                |
+| instance_id       | String | the instance ID of the freshly inserted player |
+
+******
+
+**Example**
+
+```json
+{"command":"addplayer","args":[{"player_id":"player1"},{"name":"testMap"}]}
+```
+
+**Result**
+
+```json
+{"command":"addplayer","args":[{"instance_id":"654851235487"}]}
+```
+
+**Remarks**
+
+The instance id returned by the function is used to authenticate the socket which is connecting to the web server. When a new instance is created, CV2D game server will open a connection to the web server.  This opened connection can be used by web server to send commands to the instance. But first, the webserver must authenticate the socket by sending the command Authenticate (see command below). After authentication have succeeded , the socket can be used to freely send command to the instance, as long as this one is open.
 
 
 

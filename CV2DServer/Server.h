@@ -14,6 +14,7 @@ class Server{
 		void ChangePort(unsigned int port);
 		
 		void SetCallbackClient(const Function<Upp::String (const TcpSocket& socket, const Upp::String&)>& callback);
+		void SetCallbackClientClose(const Function<void (const TcpSocket& socket)>& callback);
 		void SetCallbackServer(const Function<Upp::String (const TcpSocket& socket, const Upp::String&)>& callback);
 		void RemoveCallbackClient();
 		void RemoveCallbackServer();
@@ -29,7 +30,8 @@ class Server{
 		bool IsReady();
 		
 		const TcpSocket& ConnectNewClient(const Upp::String& addr, int port);
-
+		void CloseSocket(const TcpSocket* socket);
+		const TcpSocket& GetWebServerSocket()const;
 	private:
 		void Connection(TcpSocket& socket, int position);
 		void Listener();
@@ -40,7 +42,10 @@ class Server{
 		bool d_stopThread;
 		
 		Function<Upp::String (const TcpSocket& socket, const Upp::String&)> d_callbackClient;
+		Function<void (const TcpSocket& socket)> d_callbackClientClose;
 		Function<Upp::String (const TcpSocket& socket, const Upp::String&)> d_callbackServer;
+		
+		
 		Array<Thread> d_clients;
 		Array<TcpSocket> d_sockets;
 		Thread d_server;

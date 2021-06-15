@@ -1,6 +1,6 @@
 #ifndef _TiledMapReader_TiledMap_h_
 #define _TiledMapReader_TiledMap_h_
-#include <Core/core.h>
+#include <Core/Core.h>
 
 namespace Upp{
 

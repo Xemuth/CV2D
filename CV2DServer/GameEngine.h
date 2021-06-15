@@ -19,8 +19,11 @@ class GameEngine{
 		double AddPlayer(const Upp::String& playerId, const Upp::String& mapName) noexcept(false); //when a player want to be added to a map that isnt yet instantiate or loaded, then it try to load it and instantiate it before adding the player.
 		bool UpdatePlayer(const Upp::String& playerId, bool keyPressed, byte facing); //if a player remain away from keyboard (no key pressed during more than #playerTimeout) then it remove player from the instance
 		bool RemovePlayer(const Upp::String& playerId); //if player disconnect then it is possible to call this routin
+		bool RemoveInstance(double instanceId); //Remove instance
 		
 		InstanceState GetInstanceState(double instanceId); //if instance state is not call for a period higher than #instanceTimeout then this instance is removed from game engine
+		
+		void SetCallbackTimeout(const Function<void (double)>& callback);
 		
 		typedef GameEngine CLASSNAME;
 	private:
@@ -51,6 +54,8 @@ class GameEngine{
 		Upp::Array<Instance> d_instances;
 		Upp::Array<TiledMapJson> d_maps;
 		Upp::VectorMap<Upp::String, double> d_players; // <playerId, instanceId>
+	
+		Function<void (double)> d_callbackInstanceTimeout;
 	
 		Thread d_threadJanitor;
 		Thread d_threadUpdater;
