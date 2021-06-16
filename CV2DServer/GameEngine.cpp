@@ -31,8 +31,14 @@ void GameEngine::Stop(){
 	d_threadJanitor.Wait();
 }
 
-void GameEngine::SetCallbackTimeout(const Function<void (double)>& callback){
+void GameEngine::SetCallbackInstanceTimeout(const Function<void (double)>& callback){
 	d_callbackInstanceTimeout = callback;
+}
+void GameEngine::SetCallbackInstanceClose(const Function<void (double)>& callback){
+	d_callbackInstanceClose = callback;
+}
+void GameEngine::SetCallbackInstanceCreate(const Function<void (double)>& callback){
+	d_callbackInstanceCreate = callback;
 }
 
 bool GameEngine::RemoveInstance(double instanceId){

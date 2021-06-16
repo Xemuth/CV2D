@@ -6,11 +6,19 @@ namespace Upp{
 
 RemoteInterface::RemoteInterface(const Upp::Vector<Upp::String>& authorizedIp, unsigned int listeningPort, int instanceTimeout, int mapLoadedTimeout, int playerTimeout, int tickRate) :
 	d_gameEngine(instanceTimeout, mapLoadedTimeout, playerTimeout, tickRate), d_server(authorizedIp, listeningPort) {
-		d_server.SetCallbackClient([&](const TcpSocket& socket, const Upp::String& str) -> Upp::String{ return CommandClient(socket, str); });
-		d_server.SetCallbackClientClose([&](const TcpSocket& socket)-> void{ return CloseClient(socket);});
-		d_server.SetCallbackServer([&](const TcpSocket& socket, const Upp::String& str) -> Upp::String{ return CommandServer(socket, str); });
 		
-		d_gameEngine.SetCallbackTimeout([&](double instanceId) -> void{ return InstanceTimeout(instanceId);});
+		d_server.SetCallbackClientMessage([&](const TcpSocket& socket, const Upp::String& str) -> Upp::String{ return CommandClient(socket, str); });
+		d_server.SetCallbackClientClose([&](const TcpSocket& socket)-> void{ return CloseClient(socket);});
+	//	d_server.SetCallbackClientOpen();
+		
+		
+		d_server.SetCallbackServerMessage([&](const TcpSocket& socket, const Upp::String& str) -> Upp::String{ return CommandServer(socket, str); });
+		//d_server.SetCallbackServerClose();
+		//d_server.SetCallbackServerOpen();
+		
+		//d_gameEngine.SetCallbackInstanceCreate();
+		//d_gameEngine.SetCallbackInstanceClose()
+		d_gameEngine.SetCallbackInstanceTimeout([&](double instanceId) -> void{ return InstanceTimeout(instanceId);});
 		
 		d_started = false;
 	}

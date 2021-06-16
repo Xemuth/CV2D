@@ -10,32 +10,68 @@ Server::~Server(){
 	Stop();
 }
 
-void Server::SetCallbackClient(const Function<Upp::String (const TcpSocket& socket, const Upp::String&)>& callback){
-	d_callbackClient = callback;
+void Server::SetCallbackClientMessage(const Function<Upp::String (const TcpSocket& socket, const Upp::String&)>& callback){
+	d_callbackClientMessage = callback;
 }
 
-void Server::SetCallbackServer(const Function<Upp::String (const TcpSocket& socket, const Upp::String&)>& callback){
-	d_callbackServer = callback;
+void Server::SetCallbackServerMessage(const Function<Upp::String (const TcpSocket& socket, const Upp::String&)>& callback){
+	d_callbackServerMessage = callback;
 }
 
 void Server::SetCallbackClientClose(const Function<void (const TcpSocket& socket)>& callback){
 	d_callbackClientClose = callback;
 }
 
-bool Server::HaveCallbackServer()const{
-	return d_callbackClient;
-}
-bool Server::HaveCallbackClient()const{
-	return d_callbackClient;
+void Server::SetCallbackClientOpen(const Function<void (const TcpSocket& socket)>& callback){
+	d_callbackClientOpen = callback;
 }
 
-void Server::RemoveCallbackClient(){
-	d_callbackClient = Nuller();
+void Server::SetCallbackServerClose(const Function<void (const TcpSocket& socket)>& callback){
+	d_callbackServerClose = callback;
 }
 
-void Server::RemoveCallbackServer(){
-	d_callbackClient = Nuller();
+void Server::SetCallbackServerOpen(const Function<void (const TcpSocket& socket)>& callback){
+	d_callbackServerOpen = callback;
 }
+
+void Server::RemoveCallbackClientOpen(){
+	d_callbackClientOpen = Nuller();
+}
+void Server::RemoveCallbackServerOpen(){
+	d_callbackServerOpen = Nuller();
+}
+void Server::RemoveCallbackClientClose(){
+	d_callbackClientClose = Nuller();
+}
+void Server::RemoveCallbackServerClose(){
+	d_callbackServerClose= Nuller();
+}
+void Server::RemoveCallbackClientMessage(){
+	d_callbackClientMessage = Nuller();
+}
+void Server::RemoveCallbackServerMessage(){
+	d_callbackServerMessage = Nuller();
+}
+
+bool Server::HaveCallbackClientOpen()const{
+	return d_callbackClientOpen;
+}
+bool Server::HaveCallbackClientClose()const{
+	return d_callbackClientClose;
+}
+bool Server::HaveCallbackServerOpen()const{
+	return d_callbackServerOpen;
+}
+bool Server::HaveCallbackServerClose()const{
+	return d_callbackServerClose;
+}
+bool Server::HaveCallbackClientMessage()const{
+	return d_callbackClientMessage;
+}
+bool Server::HaveCallbackServerMessage()const{
+	return d_callbackClientMessage;
+}
+
 
 unsigned int Server::GetPort()const{
 	return d_port;
@@ -143,6 +179,7 @@ const TcpSocket& Server::ConnectNewClient(const Upp::String& addr, int port){
 
 void Server::Connection(TcpSocket& socket, int position){
 	LLOG("[Server][Connection " + AsString(position) + "] Connection is started ");
+	d_callbackClientOpen(socket);
 	SocketWaitEvent swe;
 	swe.Add(socket, 0x7); // 0x7 is WAIT_ALL
 	while(!d_stopThread && !socket.IsError() && socket.IsOpen()){
@@ -159,7 +196,7 @@ void Server::Connection(TcpSocket& socket, int position){
 				if(data.GetCount() > 0){
 					Upp::String sendingCmd = "";
 					LLOG("[Server][Connection " + AsString(position) + "] Receiving  from web server: " + data.Left(20));
-					sendingCmd = d_callbackClient(socket, data);
+					sendingCmd = d_callbackClientMessage(socket, data);
 					if(sendingCmd.GetCount() > 0){
 						LLOG("[Server][Connection " + AsString(position) + "] Sending to web server: " + sendingCmd.Left(20));
 						socket.Put(sendingCmd);
@@ -206,6 +243,7 @@ void Server::Listener(){
 			LLOG("[Server][Listener] WebServer connected, closing listener");
 			d_socket.Close();
 			listening = false;
+			d_callbackServerOpen(d_activeConnection);
 			
 			d_activeConnection.Timeout(500);
 			d_activeConnection.Linger(200);
@@ -225,7 +263,7 @@ void Server::Listener(){
 						if(data.GetCount() > 0){
 							Upp::String sendingCmd = "";
 							LLOG("[Server][Listener] Receiving  from web server: " + data.Left(20));
-							sendingCmd = d_callbackServer(d_activeConnection, data);
+							sendingCmd = d_callbackServerMessage(d_activeConnection, data);
 							if(sendingCmd.GetCount() > 0){
 								LLOG("[Server][Listener] Sending to web server: " + sendingCmd.Left(20));
 								d_activeConnection.Put(sendingCmd);
@@ -237,6 +275,7 @@ void Server::Listener(){
 				}
 			}
 			if(d_activeConnection.IsError()) LLOG("[Server][Listener] WebServer error: " + d_activeConnection.GetErrorDesc());
+			d_callbackServerClose(d_activeConnection);
 			d_activeConnection.Close();
 			LLOG("[Server][Listener] WebServer disconnected");
 		}

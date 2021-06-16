@@ -23,7 +23,9 @@ class GameEngine{
 		
 		InstanceState GetInstanceState(double instanceId); //if instance state is not call for a period higher than #instanceTimeout then this instance is removed from game engine
 		
-		void SetCallbackTimeout(const Function<void (double)>& callback);
+		void SetCallbackInstanceTimeout(const Function<void (double)>& callback);
+		void SetCallbackInstanceClose(const Function<void (double)>& callback);
+		void SetCallbackInstanceCreate(const Function<void (double)>& callback);
 		
 		typedef GameEngine CLASSNAME;
 	private:
@@ -55,6 +57,8 @@ class GameEngine{
 		Upp::Array<TiledMapJson> d_maps;
 		Upp::VectorMap<Upp::String, double> d_players; // <playerId, instanceId>
 	
+		Function<void (double)> d_callbackInstanceCreate;
+		Function<void (double)> d_callbackInstanceClose;
 		Function<void (double)> d_callbackInstanceTimeout;
 	
 		Thread d_threadJanitor;

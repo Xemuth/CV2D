@@ -13,14 +13,29 @@ class Server{
 		bool RemoveAuthorizedIp(const Upp::String& ip);
 		void ChangePort(unsigned int port);
 		
-		void SetCallbackClient(const Function<Upp::String (const TcpSocket& socket, const Upp::String&)>& callback);
 		void SetCallbackClientClose(const Function<void (const TcpSocket& socket)>& callback);
-		void SetCallbackServer(const Function<Upp::String (const TcpSocket& socket, const Upp::String&)>& callback);
-		void RemoveCallbackClient();
-		void RemoveCallbackServer();
+		void SetCallbackClientOpen(const Function<void (const TcpSocket& socket)>& callback);
 		
-		bool HaveCallbackClient()const;
-		bool HaveCallbackServer()const;
+		void SetCallbackServerClose(const Function<void (const TcpSocket& socket)>& callback);
+		void SetCallbackServerOpen(const Function<void (const TcpSocket& socket)>& callback);
+		
+		void SetCallbackClientMessage(const Function<Upp::String (const TcpSocket& socket, const Upp::String&)>& callback);
+		void SetCallbackServerMessage(const Function<Upp::String (const TcpSocket& socket, const Upp::String&)>& callback);
+		
+		
+		void RemoveCallbackClientOpen();
+		void RemoveCallbackServerOpen();
+		void RemoveCallbackClientClose();
+		void RemoveCallbackServerClose();
+		void RemoveCallbackClientMessage();
+		void RemoveCallbackServerMessage();
+		
+		bool HaveCallbackClientOpen()const;
+		bool HaveCallbackClientClose()const;
+		bool HaveCallbackServerOpen()const;
+		bool HaveCallbackServerClose()const;
+		bool HaveCallbackClientMessage()const;
+		bool HaveCallbackServerMessage()const;
 		
 		unsigned int GetPort()const;
 		const Vector<Upp::String>& GetAuthorizedIps()const;
@@ -41,10 +56,13 @@ class Server{
 		bool d_ready;
 		bool d_stopThread;
 		
-		Function<Upp::String (const TcpSocket& socket, const Upp::String&)> d_callbackClient;
+		Function<Upp::String (const TcpSocket& socket, const Upp::String&)> d_callbackClientMessage;
 		Function<void (const TcpSocket& socket)> d_callbackClientClose;
-		Function<Upp::String (const TcpSocket& socket, const Upp::String&)> d_callbackServer;
+		Function<void (const TcpSocket& socket)> d_callbackClientOpen;
 		
+		Function<Upp::String (const TcpSocket& socket, const Upp::String&)> d_callbackServerMessage;
+		Function<void (const TcpSocket& socket)> d_callbackServerClose;
+		Function<void (const TcpSocket& socket)> d_callbackServerOpen;
 		
 		Array<Thread> d_clients;
 		Array<TcpSocket> d_sockets;
