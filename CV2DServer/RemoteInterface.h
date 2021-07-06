@@ -27,6 +27,8 @@ class RemoteInterface{
 		enum Target: byte{COMMAND_LINE = 0x1, WEB_SERVER = 0x2, CLIENT = 0x4};
 		Upp::String CommandClient(const TcpSocket& socket, const Upp::String& str);
 		void CloseClient(const TcpSocket& socket);
+		void InstanceCreate(double instanceId);
+		void InstanceClose(double instanceID);
 		void InstanceTimeout(double instanceId);
 		Upp::String CommandServer(const TcpSocket& socket, const Upp::String& str);
 		

@@ -16,8 +16,8 @@ RemoteInterface::RemoteInterface(const Upp::Vector<Upp::String>& authorizedIp, u
 		//d_server.SetCallbackServerClose();
 		//d_server.SetCallbackServerOpen();
 		
-		//d_gameEngine.SetCallbackInstanceCreate();
-		//d_gameEngine.SetCallbackInstanceClose()
+		d_gameEngine.SetCallbackInstanceCreate([&](double instanceId) -> void { return InstanceCreate(instanceId);});
+		d_gameEngine.SetCallbackInstanceClose([&](double instanceId) -> void { return InstanceClose(instanceId);});
 		d_gameEngine.SetCallbackInstanceTimeout([&](double instanceId) -> void{ return InstanceTimeout(instanceId);});
 		
 		d_started = false;
@@ -127,11 +127,19 @@ void RemoteInterface::CloseClient(const TcpSocket& socket){
 	for(int i = 0; i < d_link.GetCount(); i++){
 		const TcpSocket* tcp = d_link.GetKey(i);
 		if(tcp == &socket){
-			d_gameEngine.RemoveInstance(d_link.Get(tcp).Get(0));
+			//d_gameEngine.RemoveInstance(d_link.Get(tcp).Get(0));
 			d_link.Remove(i);
 			return;
 		}
 	}
+}
+
+
+void RemoteInterface::InstanceCreate(double instanceId){
+	
+}
+void RemoteInterface::InstanceClose(double instanceID){
+	
 }
 
 void RemoteInterface::InstanceTimeout(double instanceId){
@@ -139,6 +147,7 @@ void RemoteInterface::InstanceTimeout(double instanceId){
 		const TcpSocket* tcp = d_link.GetKey(i);
 		if(d_link.Get(tcp).Get(0) == instanceId){
 			d_server.CloseSocket(tcp);
+			d_link.Remove(i);
 			return;
 		}
 	}

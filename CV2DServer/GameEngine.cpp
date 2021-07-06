@@ -111,6 +111,7 @@ double GameEngine::AddPlayer(const Upp::String& playerId, const Upp::String& map
 				d_players.Add(playerId, instance.GetId());
 				d_timeout.d_playersTimeout.Add(GetSysTime().Get());
 				LLOG("[GameEngine][AddPlayer] Instance created ( Id: \""+ AsString(instance.GetId()) +"\") and player have been added to it");
+				d_callbackInstanceCreate(instance.GetId());
 				return instance.GetId();
 			}
 			iterator++;
